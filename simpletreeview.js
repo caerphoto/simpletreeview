@@ -4,6 +4,28 @@
     var PARTIAL = 1;
     var SELECTED = 2;
 
+    function NodeLocationError(loc) {
+        this.loc = loc || [];
+        this.name = 'NodeLocationError';
+        this.message = ' is not a valid node location.';
+        this.toString = function () {
+            return this.loc.join(' ') + this.message;
+        };
+    }
+
+    NodeLocationError.prototype = new Error();
+    NodeLocationError.prototype.constructor = NodeLocationError;
+
+    function TreeDataError(message) {
+        this.message = message || '';
+        this.name = 'TreeDataError';
+        this.toString = function () {
+            return this.message;
+        };
+    }
+    TreeDataError.prototype = new Error();
+    TreeDataError.prototype.constructor = TreeDataError;
+
     var Node = function (node, parent) {
 
         if (!node) {
@@ -129,6 +151,53 @@
             this.setData(options.data);
         }
     };
+
+    SimpleTreeView.prototype.nodeAt = function (loc) {
+        var node = this.getData();
+        if (!node.children) {
+            throw new TreeDataError('Tree has no data');
+        }
+
+        _(loc).each(function (index) {
+            if (node.children.length > 0 && node.children[index]) {
+                node = node.children[index];
+            } else {
+                throw new NodeLocationError(loc);
+            }
+        }, this);
+        return node;
+    };
+
+    function findNode(root, value) {
+        var i, l;
+        var node;
+
+        if (root.value === value) {
+            return root;
+        }
+
+        if (root.children.length === 0) {
+            return;
+        }
+
+        for (i = 0, l = root.children.length; i < l; i += 1) {
+            if (root.children[i].value === value) {
+                return root.children[i];
+            }
+
+            node = findNode(root.children[i], value);
+            if (node) {
+                return node;
+            }
+        }
+    }
+
+    SimpleTreeView.prototype.nodeWithValue = function (value) {
+        return findNode(this.getData(), value);
+    };
+
+    SimpleTreeView.NodeLocationError = NodeLocationError;
+    SimpleTreeView.TreeDataError = TreeDataError;
 
     SimpleTreeView.UNSELECTED = UNSELECTED;
     SimpleTreeView.PARTIAL = PARTIAL;

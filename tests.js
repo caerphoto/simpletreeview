@@ -56,12 +56,12 @@ describe('Tree initialisation', function () {
 
 describe('An existing tree', function () {
     var testData = {
-        label: 'Root node',
+        value: 'root',
         children: [
-            { label: 'Foo', value: 'foo' },
-            { label: 'Bar', value: 'bar', children: [
-                { label: 'Qux', value: 'qux' }
-            ] }
+            { value: 'child0', children: [
+                { value: 'child00' }
+            ] },
+            { value: 'child1' }
         ]
     };
 
@@ -94,6 +94,37 @@ describe('An existing tree', function () {
 
         expect(testData.children[0].label).not.toEqual('CHANGED');
         expect(dataCopy2.children[0].label).not.toEqual('CHANGED');
+    });
+
+    it('can get a node by location', function () {
+        var tree = new SimpleTreeView({ data: testData });
+        var node = tree.nodeAt([ 0, 0 ]);
+
+        expect(node.value).toEqual(testData.children[0].children[0].value);
+    });
+
+    it('throws a NodeLocationError when getting a node at an invalid location', function () {
+        var tree = new SimpleTreeView({ data: testData });
+
+        expect(function () {
+            tree.nodeAt([ 1, 0 ]);
+        }).toThrowError(SimpleTreeView.NodeLocationError);
+    });
+
+    it('throws a TreeDataError when getting nodes in a tree with no data', function () {
+        var tree = new SimpleTreeView();
+
+        expect(function () {
+            tree.nodeAt([ 0 ]);
+        }).toThrowError(SimpleTreeView.TreeDataError);
+    });
+
+    it('can get a node by value', function () {
+        var tree = new SimpleTreeView({ data: testData });
+        var node = tree.nodeWithValue('child00');
+
+        expect(node).toBeDefined();
+        expect(node.value).toEqual('child00');
     });
 });
 
@@ -174,4 +205,5 @@ describe('A node', function () {
 
         expect(data.state).toEqual(UNSELECTED);
     });
+
 });
