@@ -111,7 +111,7 @@ describe('An existing tree', function () {
         }).toThrowError(SimpleTreeView.NodeLocationError);
     });
 
-    it('throws a TreeDataError when getting nodes in a tree with no data', function () {
+    it('throws a TreeDataError when locating nodes if it has no data', function () {
         var tree = new SimpleTreeView();
 
         expect(function () {
@@ -125,6 +125,14 @@ describe('An existing tree', function () {
 
         expect(node).toBeDefined();
         expect(node.value).toEqual('child00');
+    });
+
+    it('thows a TreeDataError when finding nodes if it has no data', function () {
+        var tree = new SimpleTreeView();
+
+        expect(function () {
+            tree.nodeWithValue('42');
+        }).toThrowError(SimpleTreeView.TreeDataError);
     });
 });
 
@@ -161,7 +169,7 @@ describe('A node', function () {
         expect(data.children[0].children[0].state).toEqual(SELECTED);
     });
 
-    it('deselects all of its ancestors when deselected', function () {
+    it('deselects all of its descendants when deselected', function () {
         var tree = new SimpleTreeView({ data: testData });
 
         var data = tree.getData();

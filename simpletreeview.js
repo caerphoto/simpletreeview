@@ -193,6 +193,11 @@
     }
 
     SimpleTreeView.prototype.nodeWithValue = function (value) {
+        var root = this.getData();
+        if (!root.children) {
+            throw new TreeDataError('Tree has no data');
+        }
+
         return findNode(this.getData(), value);
     };
 
