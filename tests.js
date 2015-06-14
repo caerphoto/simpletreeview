@@ -236,7 +236,7 @@ describe('DOM element', function () {
     });
 
     it('can be assigned when creating the tree', function () {
-        var tree = new SimpleTreeView({ el: el });
+        var tree = new SimpleTreeView({ element: el });
         expect(tree.getElement()).toEqual(el);
     });
 
@@ -316,6 +316,7 @@ describe('Node template', function () {
             }
         ]
     };
+
     it('has a default, that is a string', function () {
         var tree = new SimpleTreeView();
         var template = tree.getNodeTemplate();
@@ -367,7 +368,39 @@ describe('Node template', function () {
 });
 
 describe('A rendered tree', function () {
-    it('exists in DOM element', function () {
+    var basicTestData = {
+        value: 'root-node',
+        children: [
+            { value: 'child0' }
+        ]
+    };
+    var testData = {
+        value: 'root',
+        children: [
+            { value: 'child0', children: [
+                { value: 'child00' },
+                { value: 'child01' }
+            ] },
+            { value: 'child1' }
+        ]
+    };
+    var el;
 
+    beforeEach(function () {
+        el = document.createElement('div');
+    });
+
+    it('exists in its DOM element', function () {
+        var tree = new SimpleTreeView({
+            data: basicTestData,
+            element: el,
+            treeTemplate: '{{value}}{{#children}}{{renderChild}}{{/children}}',
+            nodeTemplate: '{{value}}'
+        });
+        var root = tree.getData();
+        var child = root.children[0];
+
+        tree.render();
+        expect(el.innerHTML).toEqual(root.value + child.value);
     });
 });

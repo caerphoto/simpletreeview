@@ -173,8 +173,8 @@
         if (o.data) {
             this.setData(o.data);
         }
-        if (o.el) {
-            this.setElement(o.el);
+        if (o.element) {
+            this.setElement(o.element);
         }
         if (o.treeTemplate) {
             this.setTreeTemplate(o.treeTemplate);
@@ -256,6 +256,11 @@
         return findNode(this.getData(), value);
     };
 
+    function isElement(el) {
+        return el.nodeType && (el.nodeType === Node.ELEMENT_NODE ||
+            el.nodeType === Node.DOCUMENT_FRAGMENT_NODE);
+    }
+
     SimpleTreeView.prototype.getElement = function () {
         return this.__el;
     };
@@ -265,8 +270,7 @@
             throw new TypeError('Unable to set element to' + el);
         }
 
-        if (!el.nodeType || (el.nodeType !== Node.ELEMENT_NODE &&
-            el.nodeType !== Node.DOCUMENT_FRAGMENT_NODE)) {
+        if (!isElement(el)) {
             throw new TypeError('Expected Element (1) or Fragment (11), got ' + el.nodeType);
         }
         this.__el = el;
@@ -317,6 +321,14 @@
             }
         };
         return Mustache.render(this.__treeTemplate, view);
+    };
+
+    SimpleTreeView.prototype.render = function () {
+        if (!this.__el || !isElement(this.__el)) {
+            throw new TypeError('Unable to render tree with no valid element');
+        }
+
+        this.__el.innerHTML = this.html();
     };
 
     SimpleTreeView.NodeLocationError = NodeLocationError;
