@@ -1,5 +1,8 @@
-/*global exports:true, module, _, Mustache */
+/*global _, Mustache */
 (function () {
+    var self = this;
+    var D = self.document;
+
     var UNSELECTED = 0;
     var PARTIAL = 1;
     var SELECTED = 2;
@@ -30,9 +33,11 @@
     var defaultNodeTemplate;
 
     (function () {
+        // Load default templates, if they exist
+
         function ready() {
-            defaultTreeTemplate = document.getElementById('STV_tree_template');
-            defaultNodeTemplate = document.getElementById('STV_node_template');
+            defaultTreeTemplate = D.getElementById('STV_tree_template');
+            defaultNodeTemplate = D.getElementById('STV_node_template');
 
             if (defaultTreeTemplate && defaultTreeTemplate.innerHTML.length > 0) {
                 defaultTreeTemplate = defaultTreeTemplate.innerHTML;
@@ -43,20 +48,20 @@
         }
 
         function readyStateChange() {
-            if (document.readyState === 'complete') {
+            if (D.readyState === 'complete') {
                 ready();
             }
         }
 
-        if (document.readyState === 'complete') {
+        if (D.readyState === 'complete') {
             setTimeout(ready, 1);
         } else {
-            if (document.addEventListener) {
-                document.addEventListener('DOMContentLoaded', ready, false);
-                window.addEventListener('load', ready, false);
+            if (D.addEventListener) {
+                D.addEventListener('DOMContentLoaded', ready, false);
+                self.addEventListener('load', ready, false);
             } else {
-                document.attachEvent('onreadystatechange', readyStateChange);
-                window.attachEvent('onload', ready);
+                D.attachEvent('onreadystatechange', readyStateChange);
+                self.attachEvent('onload', ready);
             }
         }
     }());
@@ -339,13 +344,5 @@
     SimpleTreeView.PARTIAL = PARTIAL;
     SimpleTreeView.SELECTED = SELECTED;
 
-    var self = this;
-    if (typeof exports !== 'undefined') {
-        if (typeof module !== 'undefined' && module.exports) {
-            exports = module.exports = SimpleTreeView;
-        }
-        exports.SimpleTreeView = SimpleTreeView;
-    } else {
-        self.SimpleTreeView = SimpleTreeView;
-    }
+    self.SimpleTreeView = SimpleTreeView;
 }).call(this);
