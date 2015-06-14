@@ -1,4 +1,4 @@
-/*global exports:true, module, _ */
+/*global exports:true, module, _, Mustache */
 (function () {
     var UNSELECTED = 0;
     var PARTIAL = 1;
@@ -25,6 +25,41 @@
     }
     TreeDataError.prototype = new Error();
     TreeDataError.prototype.constructor = TreeDataError;
+
+    var defaultTreeTemplate;
+    var defaultNodeTemplate;
+
+    (function () {
+        function ready() {
+            defaultTreeTemplate = document.getElementById('STV_tree_template');
+            defaultNodeTemplate = document.getElementById('STV_node_template');
+
+            if (defaultTreeTemplate && defaultTreeTemplate.innerHTML.length > 0) {
+                defaultTreeTemplate = defaultTreeTemplate.innerHTML;
+            }
+            if (defaultNodeTemplate && defaultNodeTemplate.innerHTML.length > 0) {
+                defaultNodeTemplate = defaultNodeTemplate.innerHTML;
+            }
+        }
+
+        function readyStateChange() {
+            if (document.readyState === 'complete') {
+                ready();
+            }
+        }
+
+        if (document.readyState === 'complete') {
+            setTimeout(ready, 1);
+        } else {
+            if (document.addEventListener) {
+                document.addEventListener('DOMContentLoaded', ready, false);
+                window.addEventListener('load', ready, false);
+            } else {
+                document.attachEvent('onreadystatechange', readyStateChange);
+                window.attachEvent('onload', ready);
+            }
+        }
+    }());
 
     var TreeNode = function (node, parent, tree) {
         // Create a new node based on the given node data, filling in missing
@@ -60,6 +95,8 @@
         this.parent = parent;
         this.state = node.hasOwnProperty('state') ?
             node.state : UNSELECTED;
+
+        this.id = _.uniqueId('STV_');
 
         if (_(node).has('children') && _(node.children).isArray() &&
             node.children.length) {
@@ -121,6 +158,41 @@
         return this;
     };
 
+    TreeNode.prototype.render = function () {
+        return Mustache.render(this.tree.__nodeTemplate, this);
+    };
+
+    // #########  TREE  #########
+    var SimpleTreeView = function (opts) {
+        var o;
+
+        this.__root = {};
+        this.__options = {};
+        this.__el = null;
+        this.__treeTemplate = defaultTreeTemplate || null;
+        this.__nodeTemplate = defaultNodeTemplate || null;
+
+        _(this.__options).extend(opts);
+        o = this.__options;
+
+        if (o.data) {
+            this.setData(o.data);
+        }
+        if (o.el) {
+            this.setElement(o.el);
+        }
+        if (o.treeTemplate) {
+            this.setTreeTemplate(o.treeTemplate);
+        }
+        if (o.nodeTemplate) {
+            this.setNodeTemplate(o.nodeTemplate);
+        }
+    };
+
+    SimpleTreeView.prototype.getData = function () {
+        return this.__root;
+    };
+
     function copyNode(node) {
         return {
             label: node.label,
@@ -130,27 +202,6 @@
             children: _(node.children).map(copyNode)
         };
     }
-
-    // #########  TREE  #########
-    var SimpleTreeView = function (opts) {
-        this.__root = {};
-        this.__options = {};
-        this.__el = null;
-
-        _(this.__options).extend(opts);
-
-        if (this.__options.data) {
-            this.setData(this.__options.data);
-        }
-
-        if (this.__options.el) {
-            this.setElement(this.__options.el);
-        }
-    };
-
-    SimpleTreeView.prototype.getData = function () {
-        return this.__root;
-    };
 
     SimpleTreeView.prototype.copyData = function () {
         return copyNode(this.__root);
@@ -225,6 +276,50 @@
         }
         this.__el = el;
         return this;
+    };
+
+    SimpleTreeView.prototype.getTreeTemplate = function () {
+        return this.__treeTemplate;
+    };
+
+    SimpleTreeView.prototype.setTreeTemplate = function (template) {
+        if (!_(template).isString()) {
+            throw new TypeError('Given template is not a string');
+        }
+        this.__treeTemplate = template;
+        return this;
+    };
+
+    SimpleTreeView.prototype.getNodeTemplate = function () {
+        return this.__nodeTemplate;
+    };
+
+    SimpleTreeView.prototype.setNodeTemplate = function (template) {
+        if (!_(template).isString()) {
+            throw new TypeError('Given template is not a string');
+        }
+        this.__nodeTemplate = template;
+        return this;
+    };
+
+    SimpleTreeView.prototype.html = function () {
+        var view;
+        var root;
+        if (!this.__treeTemplate) {
+            throw new TypeError('Tree template is invalid: ' + this.__treeTemplate);
+        }
+
+        root = this.__root;
+        view = {
+            label: root.label,
+            value: root.value,
+            id: root.id,
+            children: root.children,
+            renderNode: function () {
+                return this.render();
+            }
+        };
+        return Mustache.render(this.__treeTemplate, view);
     };
 
     SimpleTreeView.NodeLocationError = NodeLocationError;

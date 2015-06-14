@@ -11,6 +11,26 @@
     <script src="lib/mustache.min.js"></script>
     <script src="lib/underscore-min.js"></script>
     <script src="simpletreeview.js"></script>
+
+    <script type="text/mustache" id="STV_node_template">
+<input type="checkbox" value="{{ value }}" id="{{id}}">
+<label for="{{id}}">{{ label }}</label>
+<ul>
+  {{# children }}
+    {{ renderNode }}
+  {{/ children }}
+</ul>
+    </script>
+
+    <script type="text/mustache" id="STV_tree_template">
+<input type="checkbox" value="{{ value }}" id="STV_ROOT_NODE">
+<label for="STV_ROOT_NODE">{{ label }}</label>
+<ul>
+  {{# children }}
+    {{ renderNode }}
+  {{/ children }}
+</ul>
+    </script>
   </head>
   <body>
     <h1>SimpleTreeView Tests</h1>

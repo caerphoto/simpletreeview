@@ -1,8 +1,10 @@
 /*global SimpleTreeView, beforeEach, describe, it, expect */
-describe('Tree initialisation', function () {
+describe('Tree creation', function () {
     it('can be done without specifying parameters', function () {
-        var tree = new SimpleTreeView();
-        expect(tree.getData).not.toThrow();
+        var tree;
+        expect(function () {
+            tree = new SimpleTreeView();
+        }).not.toThrow();
     });
 
     it('accepts a data property to build a basic tree', function () {
@@ -99,13 +101,11 @@ describe('An existing tree', function () {
     it('can get a node by location', function () {
         var tree = new SimpleTreeView({ data: testData });
         var node = tree.nodeAt([ 0, 0 ]);
-
         expect(node.value).toEqual(testData.children[0].children[0].value);
     });
 
     it('throws a NodeLocationError when getting a node at an invalid location', function () {
         var tree = new SimpleTreeView({ data: testData });
-
         expect(function () {
             tree.nodeAt([ 1, 0 ]);
         }).toThrowError(SimpleTreeView.NodeLocationError);
@@ -113,7 +113,6 @@ describe('An existing tree', function () {
 
     it('throws a TreeDataError when locating nodes if it has no data', function () {
         var tree = new SimpleTreeView();
-
         expect(function () {
             tree.nodeAt([ 0 ]);
         }).toThrowError(SimpleTreeView.TreeDataError);
@@ -133,55 +132,6 @@ describe('An existing tree', function () {
         expect(function () {
             tree.nodeWithValue('42');
         }).toThrowError(SimpleTreeView.TreeDataError);
-    });
-});
-
-describe('DOM element', function () {
-    /*
-    var testData = {
-        value: 'root',
-        children: [
-            { value: 'child0', children: [
-                { value: 'child00' }
-            ] },
-            { value: 'child1' }
-        ]
-    };
-    */
-    var el;
-
-    beforeEach(function() {
-        el = document.createElement('div');
-    });
-
-    it('can be assigned in initial options', function () {
-        var tree = new SimpleTreeView({ el: el });
-
-        expect(tree.getElement()).toEqual(el);
-    });
-
-    it('can be assigned after tree initialisation', function () {
-        var tree = new SimpleTreeView();
-
-        tree.setElement(el);
-
-        expect(tree.getElement()).toEqual(el);
-    });
-
-    it('must be a valid HTML element or document fragment', function () {
-        var tree = new SimpleTreeView();
-
-        expect(function () {
-            tree.setElement();
-        }).toThrowError(TypeError);
-
-        expect(function () {
-            tree.setElement({});
-        }).toThrowError(TypeError);
-
-        expect(function () {
-            tree.setElement(document.createDocumentFragment());
-        }).not.toThrow();
     });
 });
 
@@ -265,9 +215,137 @@ describe('A node', function () {
 
     it('knows about the tree it belongs to', function () {
         var tree = new SimpleTreeView({ data: testData });
-
         var node = tree.nodeAt([ 0 ]);
         expect(node.tree).toEqual(tree);
     });
 
+    it('has a unique ID', function () {
+        var tree = new SimpleTreeView({ data: testData });
+        var root = tree.getData();
+        var node = tree.nodeAt([ 0 ]);
+        expect(root.id).not.toEqual(node.id);
+    });
+});
+
+describe('DOM element', function () {
+    var el;
+
+    beforeEach(function() {
+        el = document.createElement('div');
+    });
+
+    it('can be assigned when creating the tree', function () {
+        var tree = new SimpleTreeView({ el: el });
+        expect(tree.getElement()).toEqual(el);
+    });
+
+    it('can be assigned after tree creation', function () {
+        var tree = new SimpleTreeView();
+        tree.setElement(el);
+        expect(tree.getElement()).toEqual(el);
+    });
+
+    it('must be a valid HTML element or document fragment', function () {
+        var tree = new SimpleTreeView();
+
+        expect(function () {
+            tree.setElement();
+        }).toThrowError(TypeError);
+
+        expect(function () {
+            tree.setElement({});
+        }).toThrowError(TypeError);
+
+        expect(function () {
+            tree.setElement(document.createDocumentFragment());
+        }).not.toThrow();
+    });
+});
+
+describe('Tree template', function () {
+    var basicTestData = {
+        value: 'root-node'
+    };
+    it('has a default, that is a string', function () {
+        var tree = new SimpleTreeView();
+        var template = tree.getTreeTemplate();
+        expect(typeof template === 'string' || template instanceof String).toBe(true);
+    });
+
+    it('can be specified when creating the tree', function () {
+        var tree = new SimpleTreeView({
+            treeTemplate: 'TEMPLATE'
+        });
+        expect(tree.getTreeTemplate()).toEqual('TEMPLATE');
+    });
+
+    it('can be assigned after creating the tree', function () {
+        var tree = new SimpleTreeView();
+        tree.setTreeTemplate('TEMPLATE');
+        expect(tree.getTreeTemplate()).toEqual('TEMPLATE');
+    });
+
+    it('can only be assigned a string', function () {
+        var tree = new SimpleTreeView();
+
+        expect(function () {
+            tree.setTreeTemplate(42);
+        }).toThrowError(TypeError);
+    });
+
+    it('can be rendered to a string of HTML', function () {
+        var tree = new SimpleTreeView({
+            data: basicTestData,
+            treeTemplate: '{{label}}'
+        });
+
+        expect(tree.html()).toEqual(tree.getData().label);
+    });
+});
+
+describe('Node template', function () {
+    var basicTestData = {
+        value: 'root-node',
+        children: [
+            {
+                value: 'child0'
+            }
+        ]
+    };
+    it('has a default, that is a string', function () {
+        var tree = new SimpleTreeView();
+        var template = tree.getNodeTemplate();
+        expect(typeof template === 'string' || template instanceof String).toBe(true);
+    });
+
+    it('can be specified when creating the tree', function () {
+        var tree = new SimpleTreeView({
+            nodeTemplate: 'TEMPLATE'
+        });
+        expect(tree.getNodeTemplate()).toEqual('TEMPLATE');
+    });
+
+    it('can be assigned after creating the tree', function () {
+        var tree = new SimpleTreeView();
+        tree.setNodeTemplate('TEMPLATE');
+        expect(tree.getNodeTemplate()).toEqual('TEMPLATE');
+    });
+
+    it('can only be assigned a string', function () {
+        var tree = new SimpleTreeView();
+
+        expect(function () {
+            tree.setNodeTemplate(42);
+        }).toThrowError(TypeError);
+    });
+
+    it('can be rendered to a string of HTML', function () {
+        var tree = new SimpleTreeView({
+            data: basicTestData,
+            treeTemplate: '{{#children}}{{renderNode}}{{/children}}',
+            nodeTemplate: '{{value}}'
+        });
+
+        expect(tree.html()).toEqual(tree.getData().children[0].value);
+    });
 });
