@@ -159,7 +159,16 @@
     };
 
     TreeNode.prototype.render = function () {
-        return Mustache.render(this.tree.__nodeTemplate, this);
+        var view = {
+            label: this.label,
+            value: this.value,
+            id: this.id,
+            children: this.children,
+            renderChild: function () {
+                return this.render();
+            }
+        };
+        return Mustache.render(this.tree.__nodeTemplate, view);
     };
 
     // #########  TREE  #########
@@ -303,19 +312,21 @@
     };
 
     SimpleTreeView.prototype.html = function () {
-        var view;
         var root;
+        var view;
         if (!this.__treeTemplate) {
             throw new TypeError('Tree template is invalid: ' + this.__treeTemplate);
         }
 
+        // This is very similar to Node.render, except it uses __treeTemplate
+        // instead of __nodeTemplate, because they are likely to be different.
         root = this.__root;
         view = {
             label: root.label,
             value: root.value,
             id: root.id,
             children: root.children,
-            renderNode: function () {
+            renderChild: function () {
                 return this.render();
             }
         };

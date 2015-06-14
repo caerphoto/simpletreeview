@@ -156,6 +156,7 @@ describe('A node', function () {
 
         data.select();
         expect(data.state).toEqual(SELECTED);
+        console.log(tree.html());
     });
 
     it('selects all of its descendants when selected', function () {
@@ -308,7 +309,10 @@ describe('Node template', function () {
         value: 'root-node',
         children: [
             {
-                value: 'child0'
+                value: 'child0',
+                children: [
+                    { value: 'child00' }
+                ]
             }
         ]
     };
@@ -342,10 +346,22 @@ describe('Node template', function () {
     it('can be rendered to a string of HTML', function () {
         var tree = new SimpleTreeView({
             data: basicTestData,
-            treeTemplate: '{{#children}}{{renderNode}}{{/children}}',
+            treeTemplate: '{{#children}}{{renderChild}}{{/children}}',
             nodeTemplate: '{{value}}'
         });
 
         expect(tree.html()).toEqual(tree.getData().children[0].value);
+    });
+
+    it('renders its child nodes', function () {
+        var tree = new SimpleTreeView({
+            data: basicTestData,
+            treeTemplate: '{{#children}}{{renderChild}}{{/children}}',
+            nodeTemplate: '{{value}}{{#children}}{{renderChild}}{{/children}}'
+        });
+        var child0 = tree.getData().children[0];
+        var child00 = child0.children[0];
+
+        expect(tree.html()).toEqual(child0.value + child00.value);
     });
 });
