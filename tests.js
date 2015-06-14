@@ -1,4 +1,4 @@
-/*global SimpleTreeView, describe, it, expect */
+/*global SimpleTreeView, beforeEach, describe, it, expect */
 describe('Tree initialisation', function () {
     it('can be done without specifying parameters', function () {
         var tree = new SimpleTreeView();
@@ -136,6 +136,55 @@ describe('An existing tree', function () {
     });
 });
 
+describe('DOM element', function () {
+    /*
+    var testData = {
+        value: 'root',
+        children: [
+            { value: 'child0', children: [
+                { value: 'child00' }
+            ] },
+            { value: 'child1' }
+        ]
+    };
+    */
+    var el;
+
+    beforeEach(function() {
+        el = document.createElement('div');
+    });
+
+    it('can be assigned in initial options', function () {
+        var tree = new SimpleTreeView({ el: el });
+
+        expect(tree.getElement()).toEqual(el);
+    });
+
+    it('can be assigned after tree initialisation', function () {
+        var tree = new SimpleTreeView();
+
+        tree.setElement(el);
+
+        expect(tree.getElement()).toEqual(el);
+    });
+
+    it('must be a valid HTML element or document fragment', function () {
+        var tree = new SimpleTreeView();
+
+        expect(function () {
+            tree.setElement();
+        }).toThrowError(TypeError);
+
+        expect(function () {
+            tree.setElement({});
+        }).toThrowError(TypeError);
+
+        expect(function () {
+            tree.setElement(document.createDocumentFragment());
+        }).not.toThrow();
+    });
+});
+
 describe('A node', function () {
     var testData = {
         value: 'root',
@@ -212,6 +261,13 @@ describe('A node', function () {
         data.children[1].deselect();
 
         expect(data.state).toEqual(UNSELECTED);
+    });
+
+    it('knows about the tree it belongs to', function () {
+        var tree = new SimpleTreeView({ data: testData });
+
+        var node = tree.nodeAt([ 0 ]);
+        expect(node.tree).toEqual(tree);
     });
 
 });

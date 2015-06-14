@@ -26,7 +26,10 @@
     TreeDataError.prototype = new Error();
     TreeDataError.prototype.constructor = TreeDataError;
 
-    var Node = function (node, parent) {
+    var TreeNode = function (node, parent, tree) {
+        // Create a new node based on the given node data, filling in missing
+        // properties if possible, assingning the given parent to it, then
+        // recursively process each of its children, if any.
 
         if (!node) {
             throw 'Attempted to call prepareNode with no data';
@@ -53,6 +56,7 @@
             this.value = node.value;
         }
 
+        this.tree = tree;
         this.parent = parent;
         this.state = node.hasOwnProperty('state') ?
             node.state : UNSELECTED;
@@ -60,7 +64,7 @@
         if (_(node).has('children') && _(node.children).isArray() &&
             node.children.length) {
             this.children = _(node.children).map(function (child) {
-                return new Node(child, this);
+                return new TreeNode(child, this, tree);
             }, this);
         } else {
             this.children = [];
@@ -101,55 +105,60 @@
         }
 
         setAnscestorState(parent);
-        return parent.state;
     }
 
-    Node.prototype.select = function () {
+    TreeNode.prototype.select = function () {
         this.state = SELECTED;
         setChildrenState(this, this.state);
         setAnscestorState(this);
+        return this;
     };
 
-    Node.prototype.deselect = function () {
+    TreeNode.prototype.deselect = function () {
         this.state = UNSELECTED;
         setChildrenState(this, this.state);
         setAnscestorState(this);
+        return this;
     };
 
+    function copyNode(node) {
+        return {
+            label: node.label,
+            value: node.value,
+            parent: node.parent,
+            state: node.state,
+            children: _(node.children).map(copyNode)
+        };
+    }
+
+    // #########  TREE  #########
     var SimpleTreeView = function (opts) {
-        var root = {};
-        var options = {};
+        this.__root = {};
+        this.__options = {};
+        this.__el = null;
 
-        _(options).extend(opts);
+        _(this.__options).extend(opts);
 
-        // Process the given node, filling in missing properties if possible,
-        // assingning the given parent to it, then recursively process each of
-        // its children, if any.
-        function copyNode(node) {
-            return {
-                label: node.label,
-                value: node.value,
-                parent: node.parent,
-                state: node.state,
-                children: _(node.children).map(copyNode)
-            };
+        if (this.__options.data) {
+            this.setData(this.__options.data);
         }
 
-        this.getData = function () {
-            return root;
-        };
-
-        this.copyData = function () {
-            return copyNode(root);
-        };
-
-        this.setData = function (data) {
-            root = new Node(data);
-        };
-
-        if (options.data) {
-            this.setData(options.data);
+        if (this.__options.el) {
+            this.setElement(this.__options.el);
         }
+    };
+
+    SimpleTreeView.prototype.getData = function () {
+        return this.__root;
+    };
+
+    SimpleTreeView.prototype.copyData = function () {
+        return copyNode(this.__root);
+    };
+
+    SimpleTreeView.prototype.setData = function (data) {
+        this.__root = new TreeNode(data, null, this);
+        return this;
     };
 
     SimpleTreeView.prototype.nodeAt = function (loc) {
@@ -201,9 +210,25 @@
         return findNode(this.getData(), value);
     };
 
+    SimpleTreeView.prototype.getElement = function () {
+        return this.__el;
+    };
+
+    SimpleTreeView.prototype.setElement = function (el) {
+        if (!el) {
+            throw new TypeError('Unable to set element to' + el);
+        }
+
+        if (!el.nodeType || (el.nodeType !== Node.ELEMENT_NODE &&
+            el.nodeType !== Node.DOCUMENT_FRAGMENT_NODE)) {
+            throw new TypeError('Expected Element (1) or Fragment (11), got ' + el.nodeType);
+        }
+        this.__el = el;
+        return this;
+    };
+
     SimpleTreeView.NodeLocationError = NodeLocationError;
     SimpleTreeView.TreeDataError = TreeDataError;
-
     SimpleTreeView.UNSELECTED = UNSELECTED;
     SimpleTreeView.PARTIAL = PARTIAL;
     SimpleTreeView.SELECTED = SELECTED;
