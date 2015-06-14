@@ -365,3 +365,9 @@ describe('Node template', function () {
         expect(tree.html()).toEqual(child0.value + child00.value);
     });
 });
+
+describe('A rendered tree', function () {
+    it('exists in DOM element', function () {
+
+    });
+});

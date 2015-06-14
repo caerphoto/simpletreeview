@@ -8,13 +8,13 @@
     <script src="jasmine/lib/jasmine-2.3.4/jasmine.js"></script>
     <script src="jasmine/lib/jasmine-2.3.4/jasmine-html.js"></script>
     <script src="jasmine/lib/jasmine-2.3.4/boot.js"></script>
+    <script src="lib/jquery-1.11.3.min.js"></script>
     <script src="lib/mustache.min.js"></script>
     <script src="lib/underscore-min.js"></script>
     <script src="simpletreeview.js"></script>
 
     <script type="text/mustache" id="STV_node_template">
-<input type="checkbox" value="{{ value }}" id="{{id}}">
-<label for="{{id}}">{{ label }}</label>
+<label>{{ label }}</label>
 <ul>
   {{# children }}
     {{{ renderChild }}}
@@ -23,8 +23,7 @@
     </script>
 
     <script type="text/mustache" id="STV_tree_template">
-<input type="checkbox" value="{{ value }}" id="STV_ROOT_NODE">
-<label for="STV_ROOT_NODE">{{ label }}</label>
+<label>{{ label }}</label>
 <ul>
   {{# children }}
     {{{ renderChild }}}

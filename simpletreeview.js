@@ -1,4 +1,4 @@
-/*global _, Mustache */
+/*global _, $, Mustache */
 (function () {
     var self = this;
     var D = self.document;
@@ -32,39 +32,20 @@
     var defaultTreeTemplate;
     var defaultNodeTemplate;
 
-    (function () {
+    $(function () {
         // Load default templates, if they exist
 
-        function ready() {
-            defaultTreeTemplate = D.getElementById('STV_tree_template');
-            defaultNodeTemplate = D.getElementById('STV_node_template');
+        defaultTreeTemplate = D.getElementById('STV_tree_template');
+        defaultNodeTemplate = D.getElementById('STV_node_template');
 
-            if (defaultTreeTemplate && defaultTreeTemplate.innerHTML.length > 0) {
-                defaultTreeTemplate = defaultTreeTemplate.innerHTML;
-            }
-            if (defaultNodeTemplate && defaultNodeTemplate.innerHTML.length > 0) {
-                defaultNodeTemplate = defaultNodeTemplate.innerHTML;
-            }
+        if (defaultTreeTemplate && defaultTreeTemplate.innerHTML.length > 0) {
+            defaultTreeTemplate = defaultTreeTemplate.innerHTML;
+        }
+        if (defaultNodeTemplate && defaultNodeTemplate.innerHTML.length > 0) {
+            defaultNodeTemplate = defaultNodeTemplate.innerHTML;
         }
 
-        function readyStateChange() {
-            if (D.readyState === 'complete') {
-                ready();
-            }
-        }
-
-        if (D.readyState === 'complete') {
-            setTimeout(ready, 1);
-        } else {
-            if (D.addEventListener) {
-                D.addEventListener('DOMContentLoaded', ready, false);
-                self.addEventListener('load', ready, false);
-            } else {
-                D.attachEvent('onreadystatechange', readyStateChange);
-                self.attachEvent('onload', ready);
-            }
-        }
-    }());
+    });
 
     var TreeNode = function (node, parent, tree) {
         // Create a new node based on the given node data, filling in missing
