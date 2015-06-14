@@ -47,6 +47,8 @@
 
     });
 
+    var CHILD_NODE;
+
     var TreeNode = function (node, parent, tree) {
         // Create a new node based on the given node data, filling in missing
         // properties if possible, assingning the given parent to it, then
@@ -93,6 +95,24 @@
             this.children = [];
         }
     };
+
+    (function () {
+        var li = D.createElement('li');
+        var checkbox = D.createElement('div');
+        var label = D.createElement('label');
+        var childList = D.createElement('ul');
+
+        li.className = 'STV-node';
+        checkbox.className = 'STV-checkbox';
+        label.className = 'STV-label';
+        childList.className = 'STV-child-list';
+
+        li.appendChild(checkbox);
+        li.appendChild(label);
+        li.appendChild(childList);
+
+        CHILD_NODE = li;
+    }());
 
     function setChildrenState(node, state) {
         _(node.children).each(function (child) {
