@@ -47,8 +47,6 @@
 
     });
 
-    var CHILD_NODE;
-
     var TreeNode = function (node, parent, tree) {
         // Create a new node based on the given node data, filling in missing
         // properties if possible, assingning the given parent to it, then
@@ -86,6 +84,20 @@
 
         this.id = _.uniqueId('STV_');
 
+        if (tree.__options.useDomApi) {
+            this.elements = createElements(this);
+            if (this.parent) {
+                this.parent.elements.childList.appendChild(this.elements.li);
+            } else {
+                if (tree) {
+                    // This is the root node, so append to the tree's list instead
+                    //tree.__rootElement.appendChild(this.elements.checkbox);
+                    tree.__rootElement.appendChild(this.elements.label);
+                    tree.__rootElement.appendChild(this.elements.childList);
+                }
+            }
+        }
+
         if (_(node).has('children') && _(node.children).isArray() &&
             node.children.length) {
             this.children = _(node.children).map(function (child) {
@@ -96,23 +108,35 @@
         }
     };
 
-    (function () {
+    function createElements(node) {
         var li = D.createElement('li');
-        var checkbox = D.createElement('div');
+        //var checkbox = D.createElement('div');
         var label = D.createElement('label');
-        var childList = D.createElement('ul');
+        var childList;
 
         li.className = 'STV-node';
-        checkbox.className = 'STV-checkbox';
+        //checkbox.className = 'STV-checkbox';
         label.className = 'STV-label';
-        childList.className = 'STV-child-list';
+        label.appendChild(D.createTextNode(node.label));
 
-        li.appendChild(checkbox);
+        //li.appendChild(checkbox);
         li.appendChild(label);
+
+        childList = D.createElement('ul');
+        if (node.children && node.children.length > 0) {
+            childList.className = 'STV-child-list';
+        }
         li.appendChild(childList);
 
-        CHILD_NODE = li;
-    }());
+        return {
+            label: label,
+            //checkbox: checkbox,
+            childList: childList,
+            li: li
+        };
+    }
+
+    this.createElements = createElements;
 
     function setChildrenState(node, state) {
         _(node.children).each(function (child) {
@@ -186,6 +210,8 @@
         this.__el = null;
         this.__treeTemplate = defaultTreeTemplate || null;
         this.__nodeTemplate = defaultNodeTemplate || null;
+
+        this.__rootElement = D.createDocumentFragment();
 
         _(this.__options).extend(opts);
         o = this.__options;
@@ -277,8 +303,11 @@
     };
 
     function isElement(el) {
-        return el.nodeType && (el.nodeType === Node.ELEMENT_NODE ||
-            el.nodeType === Node.DOCUMENT_FRAGMENT_NODE);
+        // IE8 doesn't know about the global Node object
+        var ELEMENT_NODE = 1;
+        var DOCUMENT_FRAGMENT_NODE = 11;
+        return el.nodeType && (el.nodeType === ELEMENT_NODE ||
+            el.nodeType === DOCUMENT_FRAGMENT_NODE);
     }
 
     SimpleTreeView.prototype.getElement = function () {
@@ -348,7 +377,11 @@
             throw new TypeError('Unable to render tree with no valid element');
         }
 
-        this.__el.innerHTML = this.html();
+        if (this.__options.useDomApi) {
+            this.__el.appendChild(this.__rootElement);
+        } else {
+            this.__el.innerHTML = this.html();
+        }
     };
 
     SimpleTreeView.NodeLocationError = NodeLocationError;
