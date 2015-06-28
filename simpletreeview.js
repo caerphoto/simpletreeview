@@ -149,7 +149,7 @@
             if (this.parent) {
                 // Node is a child, so put its elements in an <li>
                 el = D.createElement('li');
-                el.className = '.stv-child-node';
+                el.className = 'stv-child-node';
             } else {
                 // Node is the root, so add its elements to the tree's element
                 el = this.tree.__rootElement;
