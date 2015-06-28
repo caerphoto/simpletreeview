@@ -1,0 +1,98 @@
+body {
+    font-family: 'SF UI Text', 'Segoe UI', sans-serif;
+}
+label {
+    display: inline-block;
+    margin-bottom: 0.5em;
+}
+
+input, button {
+    font: inherit;
+}
+
+ul, li {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+li {
+    margin-left: 2em;
+}
+
+.ac,
+.stv-expander:hover,
+.stv-label:hover {
+    color: #0084d1;
+}
+
+.stv-label {
+    cursor: pointer;
+}
+
+.stv-checkbox {
+    display: inline-block;
+    line-height: 16px;
+    width: 16px;
+    height: 16px;
+    margin-right: 0.5em;
+    text-align: center;
+    background: #eee;
+    border: 1px solid #bbb;
+    border-bottom-color: #999;
+    border-radius: 2px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        0 1px 1px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+.stv-checkbox:hover {
+    border-color: #ddd;
+    background-color: #f4f4f4;
+}
+.stv-unselected > .stv-checkbox::before {
+    content: "\a0"; /* non-breaking space */
+}
+.stv-selected > .stv-checkbox {
+    background: #b8deff;
+    border-color: #0084d1;
+}
+.stv-selected > .stv-checkbox::before {
+    content: "\2713"; /* check mark */
+}
+.stv-partially-selected > .stv-checkbox {
+    background: #dde8f2;
+    border-color: #87a3bb;
+    color: #4a6984;
+}
+.stv-partially-selected > .stv-checkbox::before {
+    content: "\2022"; /* bullet */
+}
+
+.stv-expander {
+    font-family: "Arial Unicode MS";
+    font-size: 20px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    margin-right: 0.5em;
+    cursor: pointer;
+}
+
+.stv-leaf > .stv-expander {
+    visibility: hidden;
+}
+
+.stv-expanded > .stv-expander::before {
+    content: "\25bc"; /* black down-pointing triangle */
+}
+
+.stv-collapsed > .stv-expander::before {
+    content: "\25b6"; /* black right-pointing triangle */
+}
+
+.stv-collapsed > .stv-child-list {
+    display: none;
+}

@@ -75,6 +75,9 @@
         } else {
             this.children = [];
         }
+        if (tree.__nodeHash[this.id]) {
+            throw new TreeDataError('ID of ' + this.id + 'already exists');
+        }
         tree.__nodeHash[this.id] = this;
     };
 
@@ -130,7 +133,7 @@
             $el.removeClass('stv-unselected stv-selected');
             $el.addClass('stv-partially-selected');
         } else {
-            $el.removeClass('stv-partially- stv-selected');
+            $el.removeClass('stv-partially-selected stv-selected');
             $el.addClass('stv-unselected');
         }
     }
@@ -146,17 +149,17 @@
             if (this.parent) {
                 // Node is a child, so put its elements in an <li>
                 el = D.createElement('li');
-                el.className = 'stv-node';
-                el.setAttribute('data-node-id', this.id);
+                el.className = '.stv-child-node';
             } else {
                 // Node is the root, so add its elements to the tree's element
                 el = this.tree.__rootElement;
-                el.className = 'stv-node stv-root';
+                el.className = 'stv-root-node';
             }
+            el.setAttribute('data-node-id', this.id);
+            el.className += ' stv-node';
 
             label.className = 'stv-label';
             label.appendChild(D.createTextNode(this.label));
-            el.appendChild(label);
 
             checkbox.className = 'stv-checkbox';
             if (this.state === UNSELECTED) {
@@ -166,7 +169,6 @@
             } else {
                 el.className += ' stv-selected';
             }
-            el.appendChild(checkbox);
 
             expander.className = 'stv-expander';
             if (recurseDepth === 0 && this.children.length > 0) {
@@ -174,7 +176,10 @@
             } else if (this.children.length > 0) {
                 el.className += ' stv-expanded';
             }
+
             el.appendChild(expander);
+            el.appendChild(checkbox);
+            el.appendChild(label);
 
             if (this.children.length > 0) {
                 childList = D.createElement('ul');
@@ -217,6 +222,7 @@
         },
         deselect: function () {
             this.state = UNSELECTED;
+            setNodeElementStateClass(this);
             setChildrenState(this, this.state);
             setAnscestorState(this);
             return this;
@@ -235,7 +241,7 @@
         // unique id.
         this.__nodeHash = {};
 
-        this.__rootElement = D.createDocumentFragment();
+        this.__rootElement = D.createElement('div');
 
         _(this.__options).extend(opts);
         o = this.__options;
@@ -287,7 +293,9 @@
         node.elements.$el.toggleClass('stv-expanded');
         if (node.elements.$el.hasClass('stv-expanded') && node.children.length > 0) {
             _(node.children).each(function (child) {
-                child.createElements(0, true);
+                if (!child.elements) {
+                    child.createElements(0, true);
+                }
             });
         }
     }
@@ -360,7 +368,7 @@
                 var nodeId = this.parentNode.getAttribute('data-node-id');
                 var node = tree.nodeWithId(nodeId);
                 if (!node) {
-                    throw new TreeDataError('Unable to handle click on element with node id ' + nodeId + ': node not found');
+                    throw new Error('Unable to handle click on element with node id ' + nodeId + ': node not found');
                 }
                 if (node.state === SELECTED) {
                     node.deselect();

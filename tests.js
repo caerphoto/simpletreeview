@@ -312,21 +312,21 @@ describe('Tree rendering', function () {
 
         tree.render(-1);
         nodes = el.querySelectorAll('.stv-node');
-        expect(nodes.length).toEqual(1);
+        expect(nodes.length).toEqual(2);
     });
 
     it('creates all child elements recursively by default', function () {
         var nodes;
         tree.render();
         nodes = el.querySelectorAll('.stv-node');
-        expect(nodes.length).toEqual(4);
+        expect(nodes.length).toEqual(5);
     });
 
     it('can limit child element creation to a given depth', function () {
         var nodes;
         tree.render(1);
         nodes = el.querySelectorAll('.stv-node');
-        expect(nodes.length).toEqual(2);
+        expect(nodes.length).toEqual(3);
     });
 
     it('marks leaf nodes correctly', function () {
@@ -379,6 +379,14 @@ describe('Node checkbox event handling', function () {
         var node = tree.nodeWithValue('child00');
         $(node.elements.checkbox).trigger('click');
         expect(node.elements.el.className).toMatch(/stv-selected/);
+    });
+
+    it('sets selected child node element class to "stv-unselected" when child checkbox is clicked', function () {
+        var node = tree.nodeWithValue('child00');
+        node.select();
+        tree.render();
+        $(node.elements.checkbox).trigger('click');
+        expect(node.elements.el.className).toMatch(/stv-unselected/);
     });
 
     it('sets parent node state to partial when only one child node checkbox is clicked', function () {
@@ -449,9 +457,19 @@ describe('Node expander event handling', function () {
 
     it('causes child nodes to be rendered as needed when parent is expanded', function () {
         var node = tree.nodeWithValue('child0');
-        tree.setElement(document.querySelector('#test-tree'));
         tree.render(1);
         expect(node.elements.childList.children.length).toEqual(0);
+        $(node.elements.expander).trigger('click');
+        expect(node.elements.childList.children.length).toEqual(2);
+    });
+
+    it('does not render new child nodes when expanding if they already exists', function () {
+        var node = tree.nodeWithValue('child0');
+        tree.render(1);
+        expect(node.elements.childList.children.length).toEqual(0);
+        $(node.elements.expander).trigger('click');
+        expect(node.elements.childList.children.length).toEqual(2);
+        $(node.elements.expander).trigger('click');
         $(node.elements.expander).trigger('click');
         expect(node.elements.childList.children.length).toEqual(2);
     });

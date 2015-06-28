@@ -50,16 +50,11 @@
         var treeData = {};
         var tree;
 
-        var startTime = new Date();
+        var startTime;
         var clearTime;
         var creationTime;
         var appendingTime;
         var totalTime;
-
-        treeElement.innerHTML = '';
-
-
-        clearTime = new Date();
 
         treeData.label = 'ROOT';
         treeData.value = '*';
@@ -67,6 +62,11 @@
 
         l = parseInt(num.value, 10);
         count = createNodes(treeData, l, flat.checked ? 1 : 4, !flat.checked);
+
+        startTime = new Date();
+        treeElement.innerHTML = '';
+        clearTime = new Date();
+
         tree = new SimpleTreeView({
             data: treeData,
             element: treeElement
