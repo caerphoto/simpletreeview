@@ -1,4 +1,4 @@
-/*global _, $, Mustache */
+/*global _, $ */
 (function () {
     var self = this;
     var D = self.document;
@@ -29,118 +29,59 @@
     TreeDataError.prototype = new Error();
     TreeDataError.prototype.constructor = TreeDataError;
 
-    var defaultTreeTemplate;
-    var defaultNodeTemplate;
-
-    $(function () {
-        // Load default templates, if they exist
-
-        defaultTreeTemplate = D.getElementById('STV_tree_template');
-        defaultNodeTemplate = D.getElementById('STV_node_template');
-
-        if (defaultTreeTemplate && defaultTreeTemplate.innerHTML.length > 0) {
-            defaultTreeTemplate = defaultTreeTemplate.innerHTML;
-        }
-        if (defaultNodeTemplate && defaultNodeTemplate.innerHTML.length > 0) {
-            defaultNodeTemplate = defaultNodeTemplate.innerHTML;
-        }
-
-    });
-
-    var TreeNode = function (node, parent, tree) {
+    var TreeNode = function (nodeAttrs, parent, tree) {
         // Create a new node based on the given node data, filling in missing
         // properties if possible, assingning the given parent to it, then
         // recursively process each of its children, if any.
 
-        if (!node) {
+        if (!nodeAttrs) {
             throw 'Attempted to call prepareNode with no data';
         }
 
         // A node with no label or value property is invalid, unless it's
         // the root node.
-        if (parent && !_(node).has('label') && !_(node).has('value')) {
+        if (parent && !_(nodeAttrs).has('label') && !_(nodeAttrs).has('value')) {
             throw 'Encountered tree node with no label or value';
         }
 
-        if (_(node).has('value') && !_(node).has('label')) {
-            this.value = node.value;
-            this.label = node.value;
+        if (_(nodeAttrs).has('value') && !_(nodeAttrs).has('label')) {
+            this.value = nodeAttrs.value;
+            this.label = nodeAttrs.value;
         }
 
-        if (_(node).has('label') && !_(node).has('value')) {
-            this.label = node.label;
-            this.value = node.label;
+        if (_(nodeAttrs).has('label') && !_(nodeAttrs).has('value')) {
+            this.label = nodeAttrs.label;
+            this.value = nodeAttrs.label;
         }
 
-        if (_(node).has('label') && _(node).has('value')) {
-            this.label = node.label;
-            this.value = node.value;
+        if (_(nodeAttrs).has('label') && _(nodeAttrs).has('value')) {
+            this.label = nodeAttrs.label;
+            this.value = nodeAttrs.value;
         }
 
         this.tree = tree;
         this.parent = parent;
-        this.state = node.hasOwnProperty('state') ?
-            node.state : UNSELECTED;
+        this.state = _(nodeAttrs).has('state') ?  nodeAttrs.state : UNSELECTED;
 
         this.id = _.uniqueId('STV_');
 
-        if (tree.__options.useDomApi) {
-            this.elements = createElements(this);
-            if (this.parent) {
-                this.parent.elements.childList.appendChild(this.elements.li);
-            } else {
-                if (tree) {
-                    // This is the root node, so append to the tree's list instead
-                    //tree.__rootElement.appendChild(this.elements.checkbox);
-                    tree.__rootElement.appendChild(this.elements.label);
-                    tree.__rootElement.appendChild(this.elements.childList);
-                }
-            }
-        }
+        this.elements = null;
 
-        if (_(node).has('children') && _(node.children).isArray() &&
-            node.children.length) {
-            this.children = _(node.children).map(function (child) {
+        if (_(nodeAttrs).has('children') && _(nodeAttrs.children).isArray() &&
+            nodeAttrs.children.length) {
+            this.children = _(nodeAttrs.children).map(function (child) {
                 return new TreeNode(child, this, tree);
             }, this);
         } else {
             this.children = [];
         }
+        tree.__nodeHash[this.id] = this;
     };
-
-    function createElements(node) {
-        var li = D.createElement('li');
-        //var checkbox = D.createElement('div');
-        var label = D.createElement('label');
-        var childList;
-
-        li.className = 'STV-node';
-        //checkbox.className = 'STV-checkbox';
-        label.className = 'STV-label';
-        label.appendChild(D.createTextNode(node.label));
-
-        //li.appendChild(checkbox);
-        li.appendChild(label);
-
-        childList = D.createElement('ul');
-        if (node.children && node.children.length > 0) {
-            childList.className = 'STV-child-list';
-        }
-        li.appendChild(childList);
-
-        return {
-            label: label,
-            //checkbox: checkbox,
-            childList: childList,
-            li: li
-        };
-    }
-
-    this.createElements = createElements;
 
     function setChildrenState(node, state) {
         _(node.children).each(function (child) {
             child.state = state;
+            setNodeElementStateClass(child);
             setChildrenState(child, state);
         });
         return state;
@@ -171,35 +112,116 @@
             parent.state = PARTIAL;
         }
 
+        setNodeElementStateClass(parent);
         setAnscestorState(parent);
     }
 
-    TreeNode.prototype.select = function () {
-        this.state = SELECTED;
-        setChildrenState(this, this.state);
-        setAnscestorState(this);
-        return this;
-    };
+    function setNodeElementStateClass(node) {
+        var $el;
+        if (!node.elements) {
+            // Node has not been rendered yet.
+            return;
+        }
+        $el = node.elements.$el;
+        if (node.state === SELECTED) {
+            $el.removeClass('stv-unselected stv-partially-selected');
+            $el.addClass('stv-selected');
+        } else if (node.state === PARTIAL) {
+            $el.removeClass('stv-unselected stv-selected');
+            $el.addClass('stv-partially-selected');
+        } else {
+            $el.removeClass('stv-partially- stv-selected');
+            $el.addClass('stv-unselected');
+        }
+    }
 
-    TreeNode.prototype.deselect = function () {
-        this.state = UNSELECTED;
-        setChildrenState(this, this.state);
-        setAnscestorState(this);
-        return this;
-    };
+    _(TreeNode.prototype).extend({
+        createElements: function (recurseDepth, appendToParentList) {
+            var el;
+            var label = D.createElement('label');
+            var checkbox = D.createElement('span');
+            var expander = D.createElement('span');
+            var childList;
 
-    TreeNode.prototype.render = function () {
-        var view = {
-            label: this.label,
-            value: this.value,
-            id: this.id,
-            children: this.children,
-            renderChild: function () {
-                return this.render();
+            if (this.parent) {
+                // Node is a child, so put its elements in an <li>
+                el = D.createElement('li');
+                el.className = 'stv-node';
+                el.setAttribute('data-node-id', this.id);
+            } else {
+                // Node is the root, so add its elements to the tree's element
+                el = this.tree.__rootElement;
+                el.className = 'stv-node stv-root';
             }
-        };
-        return Mustache.render(this.tree.__nodeTemplate, view);
-    };
+
+            label.className = 'stv-label';
+            label.appendChild(D.createTextNode(this.label));
+            el.appendChild(label);
+
+            checkbox.className = 'stv-checkbox';
+            if (this.state === UNSELECTED) {
+                el.className += ' stv-unselected';
+            } else if (this.state === PARTIAL) {
+                el.className += ' stv-partially-selected';
+            } else {
+                el.className += ' stv-selected';
+            }
+            el.appendChild(checkbox);
+
+            expander.className = 'stv-expander';
+            if (recurseDepth === 0 && this.children.length > 0) {
+                el.className += ' stv-collapsed';
+            } else if (this.children.length > 0) {
+                el.className += ' stv-expanded';
+            }
+            el.appendChild(expander);
+
+            if (this.children.length > 0) {
+                childList = D.createElement('ul');
+                childList.className = 'stv-child-list';
+                el.appendChild(childList);
+                el.className += ' stv-parent';
+            } else {
+                childList = null;
+                el.className += ' stv-leaf';
+            }
+
+            // Check recurseDepth against exactly 0 so that -1 can be passed to
+            // mean 'indefinite'.
+            if (this.children.length > 0 && recurseDepth !== 0) {
+                _(this.children).each(function (child) {
+                    child.createElements((recurseDepth || 0) - 1);
+                    childList.appendChild(child.elements.el);
+                });
+            }
+
+            if (appendToParentList) {
+                this.parent.elements.childList.appendChild(el);
+            }
+
+            this.elements = {
+                label: label,
+                childList: childList,
+                checkbox: checkbox,
+                expander: expander,
+                el: el,
+                $el: $(el)
+            };
+        },
+        select: function () {
+            this.state = SELECTED;
+            setNodeElementStateClass(this);
+            setChildrenState(this, this.state);
+            setAnscestorState(this);
+            return this;
+        },
+        deselect: function () {
+            this.state = UNSELECTED;
+            setChildrenState(this, this.state);
+            setAnscestorState(this);
+            return this;
+        }
+    });
 
     // #########  TREE  #########
     var SimpleTreeView = function (opts) {
@@ -208,8 +230,10 @@
         this.__root = {};
         this.__options = {};
         this.__el = null;
-        this.__treeTemplate = defaultTreeTemplate || null;
-        this.__nodeTemplate = defaultNodeTemplate || null;
+
+        // Every node in the tree has an entry in the hash, keyed by the node's
+        // unique id.
+        this.__nodeHash = {};
 
         this.__rootElement = D.createDocumentFragment();
 
@@ -222,16 +246,6 @@
         if (o.element) {
             this.setElement(o.element);
         }
-        if (o.treeTemplate) {
-            this.setTreeTemplate(o.treeTemplate);
-        }
-        if (o.nodeTemplate) {
-            this.setNodeTemplate(o.nodeTemplate);
-        }
-    };
-
-    SimpleTreeView.prototype.getData = function () {
-        return this.__root;
     };
 
     function copyNode(node) {
@@ -244,32 +258,7 @@
         };
     }
 
-    SimpleTreeView.prototype.copyData = function () {
-        return copyNode(this.__root);
-    };
-
-    SimpleTreeView.prototype.setData = function (data) {
-        this.__root = new TreeNode(data, null, this);
-        return this;
-    };
-
-    SimpleTreeView.prototype.nodeAt = function (loc) {
-        var node = this.getData();
-        if (!node.children) {
-            throw new TreeDataError('Tree has no data');
-        }
-
-        _(loc).each(function (index) {
-            if (node.children.length > 0 && node.children[index]) {
-                node = node.children[index];
-            } else {
-                throw new NodeLocationError(loc);
-            }
-        }, this);
-        return node;
-    };
-
-    function findNode(root, value) {
+    function findNodeWithValue(root, value) {
         var i, l;
         var node;
 
@@ -286,103 +275,119 @@
                 return root.children[i];
             }
 
-            node = findNode(root.children[i], value);
+            node = findNodeWithValue(root.children[i], value);
             if (node) {
                 return node;
             }
         }
     }
 
-    SimpleTreeView.prototype.nodeWithValue = function (value) {
-        var root = this.getData();
-        if (!root.children) {
-            throw new TreeDataError('Tree has no data');
+    function toggleNodeExpansion(node) {
+        node.elements.$el.toggleClass('stv-collapsed');
+        node.elements.$el.toggleClass('stv-expanded');
+        if (node.elements.$el.hasClass('stv-expanded') && node.children.length > 0) {
+            _(node.children).each(function (child) {
+                child.createElements(0, true);
+            });
         }
-
-        return findNode(this.getData(), value);
-    };
+    }
 
     function isElement(el) {
-        // IE8 doesn't know about the global Node object
+        // IE8 doesn't know about the global Node DOM object
         var ELEMENT_NODE = 1;
         var DOCUMENT_FRAGMENT_NODE = 11;
         return el.nodeType && (el.nodeType === ELEMENT_NODE ||
             el.nodeType === DOCUMENT_FRAGMENT_NODE);
     }
 
-    SimpleTreeView.prototype.getElement = function () {
-        return this.__el;
-    };
-
-    SimpleTreeView.prototype.setElement = function (el) {
-        if (!el) {
-            throw new TypeError('Unable to set element to' + el);
-        }
-
-        if (!isElement(el)) {
-            throw new TypeError('Expected Element (1) or Fragment (11), got ' + el.nodeType);
-        }
-        this.__el = el;
-        return this;
-    };
-
-    SimpleTreeView.prototype.getTreeTemplate = function () {
-        return this.__treeTemplate;
-    };
-
-    SimpleTreeView.prototype.setTreeTemplate = function (template) {
-        if (!_(template).isString()) {
-            throw new TypeError('Given template is not a string');
-        }
-        this.__treeTemplate = template;
-        return this;
-    };
-
-    SimpleTreeView.prototype.getNodeTemplate = function () {
-        return this.__nodeTemplate;
-    };
-
-    SimpleTreeView.prototype.setNodeTemplate = function (template) {
-        if (!_(template).isString()) {
-            throw new TypeError('Given template is not a string');
-        }
-        this.__nodeTemplate = template;
-        return this;
-    };
-
-    SimpleTreeView.prototype.html = function () {
-        var root;
-        var view;
-        if (!this.__treeTemplate) {
-            throw new TypeError('Tree template is invalid: ' + this.__treeTemplate);
-        }
-
-        // This is very similar to Node.render, except it uses __treeTemplate
-        // instead of __nodeTemplate, because they are likely to be different.
-        root = this.__root;
-        view = {
-            label: root.label,
-            value: root.value,
-            id: root.id,
-            children: root.children,
-            renderChild: function () {
-                return this.render();
+    _(SimpleTreeView.prototype).extend({
+        getData: function () {
+            return this.__root;
+        },
+        copyData: function () {
+            return copyNode(this.__root);
+        },
+        setData: function (data) {
+            this.__root = new TreeNode(data, null, this);
+            return this;
+        },
+        nodeAt: function (loc) {
+            var node = this.getData();
+            if (!node.children) {
+                throw new TreeDataError('Tree has no data');
             }
-        };
-        return Mustache.render(this.__treeTemplate, view);
-    };
 
-    SimpleTreeView.prototype.render = function () {
-        if (!this.__el || !isElement(this.__el)) {
-            throw new TypeError('Unable to render tree with no valid element');
-        }
+            _(loc).each(function (index) {
+                if (node.children.length > 0 && node.children[index]) {
+                    node = node.children[index];
+                } else {
+                    throw new NodeLocationError(loc);
+                }
+            }, this);
+            return node;
+        },
+        nodeWithValue: function (value) {
+            var root = this.getData();
+            if (!root.children) {
+                throw new TreeDataError('Tree has no data');
+            }
 
-        if (this.__options.useDomApi) {
+            return findNodeWithValue(this.getData(), value);
+        },
+        nodeWithId: function (id) {
+            return this.__nodeHash[id];
+        },
+        getElement: function () {
+            return this.__el;
+        },
+        setElement: function (el) {
+            if (!el) {
+                throw new TypeError('Unable to set element to' + el);
+            }
+
+            if (!isElement(el)) {
+                throw new TypeError('Expected Element (1) or Fragment (11), got ' +
+                    el.nodeType);
+            }
+            this.__el = el;
+            this.__$el = $(el);
+            this.setEventHandlers();
+            return this;
+        },
+        setEventHandlers: function () {
+            var tree = this;
+            this.__$el.on('click', '.stv-checkbox, .stv-label', function () {
+                var nodeId = this.parentNode.getAttribute('data-node-id');
+                var node = tree.nodeWithId(nodeId);
+                if (!node) {
+                    throw new TreeDataError('Unable to handle click on element with node id ' + nodeId + ': node not found');
+                }
+                if (node.state === SELECTED) {
+                    node.deselect();
+                } else {
+                    node.select();
+                }
+            });
+
+            this.__$el.on('click', '.stv-expander', function () {
+                var nodeId = this.parentNode.getAttribute('data-node-id');
+                var node = tree.nodeWithId(nodeId);
+                if (!node) {
+                    throw new TreeDataError('Unable to handle click on element with node id ' + nodeId + ': node not found');
+                }
+                toggleNodeExpansion(node);
+            });
+        },
+        render: function (recurseDepth) {
+            if (!this.__el || !isElement(this.__el)) {
+                throw new TypeError('Unable to render tree with no valid element');
+            }
+            recurseDepth = _.isNumber(recurseDepth) ? recurseDepth : -1;
+            this.__root.createElements(recurseDepth);
+
             this.__el.appendChild(this.__rootElement);
-        } else {
-            this.__el.innerHTML = this.html();
         }
-    };
+    });
 
     SimpleTreeView.NodeLocationError = NodeLocationError;
     SimpleTreeView.TreeDataError = TreeDataError;

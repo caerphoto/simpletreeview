@@ -9,41 +9,32 @@
       .ac {
         color: #0084d1;
       }
+      label {
+        display: inline-block;
+        margin-bottom: 0.5em;
+      }
+
+      input, button {
+        font: inherit;
+      }
     </style>
   </head>
   <body>
-    <script type="text/mustache" id="STV_node_template">
-<label>{{ label }}</label>
-<ul>
-  {{# children }}
-  <li>
-    {{{ renderChild }}}
-  </li>
-  {{/ children }}
-</ul>
-    </script>
-
-    <script type="text/mustache" id="STV_tree_template">
-<label>{{ label }}</label>
-<ul>
-  {{# children }}
-  <li>
-    {{{ renderChild }}}
-  </li>
-  {{/ children }}
-</ul>
-    </script>
-
     <h1>DOM Speed Test</h1>
     <p>
-      Create <input id='num' type="number" value="1800"> nodes<br>
-      <input type="checkbox" id="usedom"><label for="usedom">Use DOM API</label><br>
+      <input type="checkbox" id="flat" checked>
+      <label for="flat">Flat list</label>
+      <br>
+      <label for="num">Nodes per level:</label>
+      <input id="num" type="number" value="1800">
+      <br>
       <input type="checkbox" id="append" checked>
-      <label for="append">Append to document</label><br>
+      <label for="append">Append to document</label>
+      <br>
       <button id="go">Go</button>
     </p>
 
-    <h2>Timing</h2>
+    <h2>Timing for <span id="node_count">?</span> nodes</h2>
     <p>
       Clear: <span id="timing_clear">?</span> ms<br>
       Creation: <span id="timing_creation" class="ac">?</span> ms<br>
@@ -54,7 +45,6 @@
     <div id="tree"></div>
 
     <script src="lib/jquery-1.11.3.min.js"></script>
-    <script src="lib/mustache.min.js"></script>
     <script src="lib/underscore-min.js"></script>
     <script src="simpletreeview.js"></script>
     <script src="domspeedtest.js"></script>

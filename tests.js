@@ -1,4 +1,8 @@
 /*global SimpleTreeView, beforeEach, describe, it, expect */
+var SELECTED = SimpleTreeView.SELECTED;
+var PARTIAL = SimpleTreeView.PARTIAL;
+var UNSELECTED = SimpleTreeView.UNSELECTED;
+
 describe('Tree creation', function () {
     it('can be done without specifying parameters', function () {
         var tree;
@@ -146,17 +150,12 @@ describe('A node', function () {
         ]
     };
 
-    var SELECTED = SimpleTreeView.SELECTED;
-    var PARTIAL = SimpleTreeView.PARTIAL;
-    var UNSELECTED = SimpleTreeView.UNSELECTED;
-
     it('can be marked as selected', function () {
         var tree = new SimpleTreeView({ data: testData });
         var data = tree.getData();
 
         data.select();
         expect(data.state).toEqual(SELECTED);
-        console.log(tree.html());
     });
 
     it('selects all of its descendants when selected', function () {
@@ -263,111 +262,8 @@ describe('DOM element', function () {
     });
 });
 
-describe('Tree template', function () {
-    var basicTestData = {
-        value: 'root-node'
-    };
-    it('has a default, that is a string', function () {
-        var tree = new SimpleTreeView();
-        var template = tree.getTreeTemplate();
-        expect(typeof template === 'string' || template instanceof String).toBe(true);
-    });
 
-    it('can be specified when creating the tree', function () {
-        var tree = new SimpleTreeView({
-            treeTemplate: 'TEMPLATE'
-        });
-        expect(tree.getTreeTemplate()).toEqual('TEMPLATE');
-    });
-
-    it('can be assigned after creating the tree', function () {
-        var tree = new SimpleTreeView();
-        tree.setTreeTemplate('TEMPLATE');
-        expect(tree.getTreeTemplate()).toEqual('TEMPLATE');
-    });
-
-    it('can only be assigned a string', function () {
-        var tree = new SimpleTreeView();
-
-        expect(function () {
-            tree.setTreeTemplate(42);
-        }).toThrowError(TypeError);
-    });
-
-    it('can be rendered to a string of HTML', function () {
-        var tree = new SimpleTreeView({
-            data: basicTestData,
-            treeTemplate: '{{label}}'
-        });
-
-        expect(tree.html()).toEqual(tree.getData().label);
-    });
-});
-
-describe('Node template', function () {
-    var basicTestData = {
-        value: 'root-node',
-        children: [
-            {
-                value: 'child0',
-                children: [
-                    { value: 'child00' }
-                ]
-            }
-        ]
-    };
-
-    it('has a default, that is a string', function () {
-        var tree = new SimpleTreeView();
-        var template = tree.getNodeTemplate();
-        expect(typeof template === 'string' || template instanceof String).toBe(true);
-    });
-
-    it('can be specified when creating the tree', function () {
-        var tree = new SimpleTreeView({
-            nodeTemplate: 'TEMPLATE'
-        });
-        expect(tree.getNodeTemplate()).toEqual('TEMPLATE');
-    });
-
-    it('can be assigned after creating the tree', function () {
-        var tree = new SimpleTreeView();
-        tree.setNodeTemplate('TEMPLATE');
-        expect(tree.getNodeTemplate()).toEqual('TEMPLATE');
-    });
-
-    it('can only be assigned a string', function () {
-        var tree = new SimpleTreeView();
-
-        expect(function () {
-            tree.setNodeTemplate(42);
-        }).toThrowError(TypeError);
-    });
-
-    it('can be rendered to a string of HTML', function () {
-        var tree = new SimpleTreeView({
-            data: basicTestData,
-            treeTemplate: '{{#children}}{{renderChild}}{{/children}}',
-            nodeTemplate: '{{value}}'
-        });
-
-        expect(tree.html()).toEqual(tree.getData().children[0].value);
-    });
-
-    it('renders its child nodes', function () {
-        var tree = new SimpleTreeView({
-            data: basicTestData,
-            treeTemplate: '{{#children}}{{renderChild}}{{/children}}',
-            nodeTemplate: '{{value}}{{#children}}{{renderChild}}{{/children}}'
-        });
-        var child0 = tree.getData().children[0];
-        var child00 = child0.children[0];
-
-        expect(tree.html()).toEqual(child0.value + child00.value);
-    });
-});
-
-describe('A rendered tree', function () {
+describe('Tree rendering', function () {
     var basicTestData = {
         value: 'root-node',
         children: [
@@ -385,22 +281,178 @@ describe('A rendered tree', function () {
         ]
     };
     var el;
+    var tree;
 
     beforeEach(function () {
         el = document.createElement('div');
+        tree = new SimpleTreeView({
+            data: testData,
+            element: el
+        });
     });
 
-    it('exists in its DOM element', function () {
+    it('creates a root element', function () {
         var tree = new SimpleTreeView({
             data: basicTestData,
-            element: el,
-            treeTemplate: '{{value}}{{#children}}{{renderChild}}{{/children}}',
-            nodeTemplate: '{{value}}'
+            element: el
         });
-        var root = tree.getData();
-        var child = root.children[0];
+        var rootElement;
 
+        tree.render(0);
+        rootElement = el.querySelector('div > .stv-label');
+        expect(rootElement).not.toBeNull();
+    });
+
+    it('creates child elements', function () {
+        var tree = new SimpleTreeView({
+            data: basicTestData,
+            element: el
+        });
+        var nodes;
+
+        tree.render(-1);
+        nodes = el.querySelectorAll('.stv-node');
+        expect(nodes.length).toEqual(1);
+    });
+
+    it('creates all child elements recursively by default', function () {
+        var nodes;
         tree.render();
-        expect(el.innerHTML).toEqual(root.value + child.value);
+        nodes = el.querySelectorAll('.stv-node');
+        expect(nodes.length).toEqual(4);
+    });
+
+    it('can limit child element creation to a given depth', function () {
+        var nodes;
+        tree.render(1);
+        nodes = el.querySelectorAll('.stv-node');
+        expect(nodes.length).toEqual(2);
+    });
+
+    it('marks leaf nodes correctly', function () {
+        var nodes;
+        tree.render(-1);
+        nodes = el.querySelectorAll('.stv-leaf');
+        expect(nodes.length).toEqual(3);
+
+    });
+});
+
+describe('Node checkbox event handling', function () {
+    var testData = {
+        value: 'root',
+        children: [
+            { value: 'child0', children: [
+                { value: 'child00' },
+                { value: 'child01' }
+            ] },
+            { value: 'child1' }
+        ]
+    };
+    var el;
+    var tree;
+
+    beforeEach(function () {
+        el = document.createElement('div');
+        tree = new SimpleTreeView({
+            data: testData,
+            element: el
+        });
+    });
+
+    it('sets unselected child node state to selected when child checkbox is clicked', function () {
+        tree.render();
+        var node = tree.nodeWithValue('child00');
+        $(node.elements.checkbox).trigger('click');
+        expect(node.state).toEqual(SELECTED);
+    });
+
+    it('sets unselected child node state to selected when child label is clicked', function () {
+        tree.render();
+        var node = tree.nodeWithValue('child00');
+        $(node.elements.label).trigger('click');
+        expect(node.state).toEqual(SELECTED);
+    });
+
+    it('sets unselected child node element class to "stv-selected" when child checkbox is clicked', function () {
+        tree.render();
+        var node = tree.nodeWithValue('child00');
+        $(node.elements.checkbox).trigger('click');
+        expect(node.elements.el.className).toMatch(/stv-selected/);
+    });
+
+    it('sets parent node state to partial when only one child node checkbox is clicked', function () {
+        tree.render();
+        var node = tree.nodeWithValue('child00');
+        $(node.elements.checkbox).trigger('click');
+        expect(node.parent.elements.el.className).toMatch(/stv-partially-selected/);
+    });
+
+    it('sets parent node state to selected when both child node checkboxes are clicked', function () {
+        tree.render();
+        var node1 = tree.nodeWithValue('child00');
+        var node2 = tree.nodeWithValue('child01');
+        $(node1.elements.checkbox).trigger('click');
+        $(node2.elements.checkbox).trigger('click');
+        expect(node1.parent.elements.el.className).toMatch(/stv-selected/);
+    });
+
+    it('sets child node class names to "stv-unselected" when parent node checkbox is clicked', function () {
+        var node1 = tree.nodeWithValue('child00');
+        var node2 = tree.nodeWithValue('child01');
+        node1.select();
+        node2.select();
+        tree.render();
+        $(node1.parent.elements.checkbox).trigger('click');
+        expect(node1.elements.el.className).toMatch(/stv-unselected/);
+        expect(node2.elements.el.className).toMatch(/stv-unselected/);
+    });
+});
+
+describe('Node expander event handling', function () {
+    var testData = {
+        value: 'root',
+        children: [
+            { value: 'child0', children: [
+                { value: 'child00' },
+                { value: 'child01' }
+            ] },
+            { value: 'child1' }
+        ]
+    };
+    var el;
+    var tree;
+
+    beforeEach(function () {
+        el = document.createElement('div');
+        tree = new SimpleTreeView({
+            data: testData,
+            element: el
+        });
+    });
+
+    it('sets the "stv-collapsed" class when clicked on an expanded node', function () {
+        var node = tree.nodeWithValue('child0');
+        tree.render();
+        $(node.elements.expander).trigger('click');
+        expect(node.elements.el.className).toMatch(/stv-collapsed/);
+        expect(node.elements.el.className).not.toMatch(/stv-expanded/);
+    });
+
+    it('sets the "stv-expanded" class when clicked on an collapsed node', function () {
+        var node = tree.nodeWithValue('child0');
+        tree.render(1);
+        $(node.elements.expander).trigger('click');
+        expect(node.elements.el.className).toMatch(/stv-expanded/);
+        expect(node.elements.el.className).not.toMatch(/stv-collapsed/);
+    });
+
+    it('causes child nodes to be rendered as needed when parent is expanded', function () {
+        var node = tree.nodeWithValue('child0');
+        tree.setElement(document.querySelector('#test-tree'));
+        tree.render(1);
+        expect(node.elements.childList.children.length).toEqual(0);
+        $(node.elements.expander).trigger('click');
+        expect(node.elements.childList.children.length).toEqual(2);
     });
 });

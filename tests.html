@@ -12,27 +12,10 @@
     <script src="lib/mustache.min.js"></script>
     <script src="lib/underscore-min.js"></script>
     <script src="simpletreeview.js"></script>
-
-    <script type="text/mustache" id="STV_node_template">
-<label>{{ label }}</label>
-<ul>
-  {{# children }}
-    {{{ renderChild }}}
-  {{/ children }}
-</ul>
-    </script>
-
-    <script type="text/mustache" id="STV_tree_template">
-<label>{{ label }}</label>
-<ul>
-  {{# children }}
-    {{{ renderChild }}}
-  {{/ children }}
-</ul>
-    </script>
   </head>
   <body>
     <h1>SimpleTreeView Tests</h1>
+    <div id="test-tree"></div>
     <script src="tests.js"></script>
   </body>
 </html>
