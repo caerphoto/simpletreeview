@@ -75,7 +75,7 @@
         creationTime = new Date();
 
         if (append.checked) {
-            tree.render(-1);
+            tree.render(1);
         }
 
         appendingTime = new Date();

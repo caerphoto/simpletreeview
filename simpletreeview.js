@@ -78,7 +78,7 @@
         if (tree.__nodeHash[this.id]) {
             throw new TreeDataError('ID of ' + this.id + 'already exists');
         }
-        tree.__nodeHash[this.id] = this;
+        this.tree.__nodeHash[this.id] = this;
     };
 
     function setChildrenState(node, state) {
@@ -242,6 +242,7 @@
         this.__nodeHash = {};
 
         this.__rootElement = D.createElement('div');
+        this.__$rootElement = $(this.__rootElement);
 
         _(this.__options).extend(opts);
         o = this.__options;
@@ -364,7 +365,7 @@
         },
         setEventHandlers: function () {
             var tree = this;
-            this.__$el.on('click', '.stv-checkbox, .stv-label', function () {
+            this.__$rootElement.on('click', '.stv-checkbox, .stv-label', function () {
                 var nodeId = this.parentNode.getAttribute('data-node-id');
                 var node = tree.nodeWithId(nodeId);
                 if (!node) {
@@ -377,11 +378,11 @@
                 }
             });
 
-            this.__$el.on('click', '.stv-expander', function () {
+            this.__$rootElement.on('click', '.stv-expander', function () {
                 var nodeId = this.parentNode.getAttribute('data-node-id');
                 var node = tree.nodeWithId(nodeId);
                 if (!node) {
-                    throw new TreeDataError('Unable to handle click on element with node id ' + nodeId + ': node not found');
+                    throw new Error('Unable to handle click on element with node id ' + nodeId + ': node not found');
                 }
                 toggleNodeExpansion(node);
             });
