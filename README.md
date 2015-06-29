@@ -90,6 +90,9 @@ call on it:
 - **setSelection(*selection*)**: reset the current selection to the given value,
   which can be either a string representing a node value, or a list of strings.
 
+- **render(*depth*)**: renders the tree in its element, optionally limited to
+  the given nesting depth.
+
 Nodes also have a couple of methods you can call on them:
 
 - **select()**: marks the node as selected, also cascading the effect as
