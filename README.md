@@ -19,7 +19,6 @@ this:
 treeData = {
     label: 'Root node',
     value: '*',
-    expanded: true,
     children: [
         {
             label: 'Child 0',
@@ -76,9 +75,10 @@ call on it:
 
 - **nodeAt(*location*)**: gets the node at the given location, which must be an
   array of indices, starting with the root, into each subsequent node's children
-  list. For example, `[ 0, 0 ]` is the first child of the first child.
+  list. For example, `[ 0, 0 ]` is the first child of the first child. Pass `[]`
+  to return the root node (which is the same as calling `getData()`).
 
-- **nodeWithValue(*value*)**: gets the (first) node whose `value` property matches the given value
+- **nodeWithValue(*value*)**: gets the (first) node whose `value` property matches the given value.
 
 - **nodeWithId(*id*)**: each node has a unique ID, which is also attached to its
   associated DOM node via the `data-node-id` attribute. This can be useful for
@@ -108,5 +108,5 @@ A node's selection state is represented by its `state` property, which is one of
 In addition, nodes have an `elements` property which contains a reference to
 each HTML element making up the rendered node: `label`, `checkbox`, `expander`,
 `childList` and `el` (the `<li>` of the node itself, or a `<div>` for the root
-node). Obviously you should be **careful modifying this property**, lest you
+node). Obviously you should **be careful modifying this property**, lest you
 confuse the tree.
