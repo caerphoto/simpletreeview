@@ -101,6 +101,10 @@ Nodes also have a couple of methods you can call on them:
 
 - **deselect()**: the inverse of `select()`.
 
+A node's selection state is represented by its `state` property, is one of
+`SimpleTreeView.UNSELECTED` (0), `SimpleTreeView.PARTIAL` (1) or
+`SimpleTreeView.SELECTED` (2).
+
 In addition, nodes have an `elements` property which contains a reference to
 each HTML element making up the rendered node: `label`, `checkbox`, `expander`,
 `childList` and `el` (the `<li>` of the node itself, or a `<div>` for the root
