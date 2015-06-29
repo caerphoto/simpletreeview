@@ -101,7 +101,7 @@ Nodes also have a couple of methods you can call on them:
 
 - **deselect()**: the inverse of `select()`.
 
-A node's selection state is represented by its `state` property, is one of
+A node's selection state is represented by its `state` property, which is one of
 `SimpleTreeView.UNSELECTED` (0), `SimpleTreeView.PARTIAL` (1) or
 `SimpleTreeView.SELECTED` (2).
 
