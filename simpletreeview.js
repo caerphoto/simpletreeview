@@ -364,7 +364,7 @@
             this.__setEventHandlers();
             return this;
         },
-        getSelection: function (node) {
+        __getSelectedNodes: function (node) {
             var selection = [];
             var childSelection;
 
@@ -373,25 +373,48 @@
             }
 
             if (node.state === SELECTED) {
-                selection.push({
-                    label: node.label,
-                    value: node.value
-                });
+                selection.push(node);
             } else if (node.state === PARTIAL) {
                 _.each(node.children, function (child) {
                     if (child.state === SELECTED) {
-                        selection.push({
-                            label: child.label,
-                            value: child.value
-                        });
+                        selection.push(child);
                     } else if (child.state === PARTIAL) {
-                        childSelection = this.getSelection(child);
+                        childSelection = this.__getSelectedNodes(child);
                         selection = selection.concat(childSelection);
                     }
                 }, this);
             }
 
             return selection;
+        },
+        getSelection: function () {
+            return _(this.__getSelectedNodes()).map(function (node) {
+                return {
+                    label: node.label,
+                    value: node.value
+                };
+            });
+        },
+        setSelection: function (selection) {
+            var currentSelection = this.__getSelectedNodes();
+
+            _(currentSelection).each(function (node) {
+                node.deselect();
+            });
+
+            if (_.isString(selection)) {
+                this.nodeWithValue(selection).select();
+                return this;
+            }
+
+            if (_.isArray(selection)) {
+                _(selection).each(function (value) {
+                    this.nodeWithValue(value).select();
+                }, this);
+                return this;
+            }
+
+            throw new TypeError('Expected string or array when setting selection, but got ' + (typeof selection));
         },
         __setEventHandlers: function () {
             var tree = this;

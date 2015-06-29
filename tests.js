@@ -147,7 +147,18 @@ describe('An existing tree', function () {
 
         selection = tree.getSelection();
         expect(selection[0].value).toEqual('child0');
+    });
 
+    it('can have a new selection applied, clearing the old one', function () {
+        var tree = new SimpleTreeView({ data: testData });
+        var selection = [ 'child0' ];
+        tree.setSelection(selection);
+        selection = [ 'child01', 'child1' ];
+        tree.setSelection(selection);
+
+        selection = tree.getSelection();
+        expect(selection[0].label).toEqual('child01');
+        expect(selection[1].label).toEqual('child1');
     });
 });
 
