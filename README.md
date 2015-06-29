@@ -1,18 +1,13 @@
 # SimpleTreeView
 
-A JavaScript treeview control that leaves the styling up to you, so you can
+A JavaScript checkbox tree control that leaves the styling up to you, so you can
 customise it to fit your application without the hassle of overriding tons of
 existing CSS rules.
-
-**NOTE:** this project is very much work-in-progress, so for now it's not
-actually useful for anything.
 
 ## Dependencies
 
 STV requires [Underscore.js](http://underscorejs.org/), at minimum. It also uses
-[Mustache.js](https://github.com/janl/mustache.js/) by default for rendering
-nodes, but you can (or will be able to, eventually) override this by providing
-your own render function.
+[jQuery](http://jquery.com/) for event handling and some DOM manipulation.
 
 ## Basic Usage
 
@@ -50,3 +45,61 @@ To actually set up a tree, do the following:
 var tree = new SimpleTreeView({ data: treeData });
 ```
 
+## Options
+
+There are only really two options: `data` and `element`. The first is, as
+described above, the actual data structure used to build and render the tree.
+The second is an HTML element into which you'd like to render the tree. You can
+use the tree without getting the DOM involved, but obviously it won't be able to
+render unless you give it somewhere to go.
+
+## API
+
+Once you've created an instance of a tree, there are a number of methods you can
+call on it:
+
+- **setElement(*element*)**: tells the tree which HTML element to insert its
+  rendered output into. TODO: when setElement() is called on an already rendered
+  tree, move the tree to the new element.
+
+- **getElement()**: returns the HTML element the tree is assigned to.
+
+- **setData(*data*)**: replace the existing tree data structure with the new
+  one.
+
+- **getData()**: returns the data structure used to set up the tree, but
+  including all the additional properties the tree uses, such as selection
+  state.
+
+- **copyData()**: returns a deep copy of the tree, limited to each node's
+  `label`, `value`, `parent`, `state` and `children` properties.
+
+- **nodeAt(*location*)**: gets the node at the given location, which must be an
+  array of indices, starting with the root, into each subsequent node's children
+  list. For example, `[ 0, 0 ]` is the first child of the first child.
+
+- **nodeWithValue(*value*)**: gets the (first) node whose `value` property matches the given value
+
+- **nodeWithId(*id*)**: each node has a unique ID, which is also attached to its
+  associated DOM node via the `data-node-id` attribute. This can be useful for
+  event handling.
+
+- **getSelection()**: returns a list of objects with `label` and `value`
+  properties, representing the currently selected nodes.
+
+- **setSelection(*selection*)**: reset the current selection to the given value,
+  which can be either a string representing a node value, or a list of strings.
+
+Nodes also have a couple of methods you can call on them:
+
+- **select()**: marks the node as selected, also cascading the effect as
+  appropriate up and down the tree, and updating the affected nodes' associated
+  HTML element's CSS classes.
+
+- **deselect()**: the inverse of `select()`.
+
+In addition, nodes have an `elements` property which contains a reference to
+each HTML element making up the rendered node: `label`, `checkbox`, `expander`,
+`childList` and `el` (the `<li>` of the node itself, or a `<div>` for the root
+node). Obviously you should be **careful modifying this property**, lest you
+confuse the tree.

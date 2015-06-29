@@ -139,7 +139,7 @@
     }
 
     _(TreeNode.prototype).extend({
-        createElements: function (recurseDepth, appendToParentList) {
+        __createElements: function (recurseDepth, appendToParentList) {
             var el;
             var label = D.createElement('label');
             var checkbox = D.createElement('span');
@@ -196,7 +196,7 @@
             // mean 'indefinite'.
             if (this.children.length > 0 && recurseDepth !== 0) {
                 _(this.children).each(function (child) {
-                    child.createElements((recurseDepth || 0) - 1);
+                    child.__createElements((recurseDepth || 0) - 1);
                     childList.appendChild(child.elements.el);
                 });
             }
@@ -296,7 +296,7 @@
         if (node.elements.$el.hasClass('stv-expanded') && node.children.length > 0) {
             _(node.children).each(function (child) {
                 if (!child.elements) {
-                    child.createElements(0, true);
+                    child.__createElements(0, true);
                 }
             });
         }
@@ -445,7 +445,7 @@
                 throw new TypeError('Unable to render tree with no valid element');
             }
             recurseDepth = _.isNumber(recurseDepth) ? recurseDepth : -1;
-            this.__root.createElements(recurseDepth);
+            this.__root.__createElements(recurseDepth);
 
             this.__el.appendChild(this.__rootElement);
         }
