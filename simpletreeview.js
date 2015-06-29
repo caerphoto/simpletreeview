@@ -156,6 +156,7 @@
                 el.className = 'stv-root-node';
             }
             el.setAttribute('data-node-id', this.id);
+            el.setAttribute('data-value', this.value);
             el.className += ' stv-node';
 
             label.className = 'stv-label';
@@ -360,10 +361,39 @@
             }
             this.__el = el;
             this.__$el = $(el);
-            this.setEventHandlers();
+            this.__setEventHandlers();
             return this;
         },
-        setEventHandlers: function () {
+        getSelection: function (node) {
+            var selection = [];
+            var childSelection;
+
+            if (!node) {
+                node = this.__root;
+            }
+
+            if (node.state === SELECTED) {
+                selection.push({
+                    label: node.label,
+                    value: node.value
+                });
+            } else if (node.state === PARTIAL) {
+                _.each(node.children, function (child) {
+                    if (child.state === SELECTED) {
+                        selection.push({
+                            label: child.label,
+                            value: child.value
+                        });
+                    } else if (child.state === PARTIAL) {
+                        childSelection = this.getSelection(child);
+                        selection = selection.concat(childSelection);
+                    }
+                }, this);
+            }
+
+            return selection;
+        },
+        __setEventHandlers: function () {
             var tree = this;
             this.__$rootElement.on('click', '.stv-checkbox, .stv-label', function () {
                 var nodeId = this.parentNode.getAttribute('data-node-id');

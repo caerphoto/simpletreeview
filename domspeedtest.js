@@ -1,15 +1,17 @@
-/*global SimpleTreeView */
+/*global SimpleTreeView, _ */
 (function () {
     var btn = document.querySelector('#go');
     var num = document.querySelector('#num');
     var append = document.querySelector('#append');
     var flat = document.querySelector('#flat');
     var treeElement = document.querySelector('#tree');
+    var selection = document.querySelector('#selection');
     var nodeCount = document.querySelector('#node_count');
     var timingClear = document.querySelector('#timing_clear');
     var timingCreation = document.querySelector('#timing_creation');
     var timingAppending = document.querySelector('#timing_appending');
     var timingTotal = document.querySelector('#timing_total');
+    var simpleTreeView;
 
     function randomString() {
         var i;
@@ -33,7 +35,7 @@
         for (i = 0; i < l; i += 1) {
             parent.children[i] = {
                 label: depth + '/' + i + ': ' + randomString(),
-                value: 'c' + i
+                value: depth + '/' + i
             };
             count += 1;
             if (depth > 0 && recurse) {
@@ -44,11 +46,15 @@
         return count;
     }
 
+    $(treeElement).on('click', '.stv-checkbox', function () {
+        var sel = simpleTreeView.getSelection();
+        selection.innerHTML = _.pluck(sel, 'label').join(',');
+    });
+
     btn.onclick = function () {
         var l;
         var count;
         var treeData = {};
-        var tree;
 
         var startTime;
         var clearTime;
@@ -67,7 +73,7 @@
         treeElement.innerHTML = '';
         clearTime = new Date();
 
-        tree = new SimpleTreeView({
+        simpleTreeView = new SimpleTreeView({
             data: treeData,
             element: treeElement
         });
@@ -75,7 +81,7 @@
         creationTime = new Date();
 
         if (append.checked) {
-            tree.render(1);
+            simpleTreeView.render(1);
         }
 
         appendingTime = new Date();

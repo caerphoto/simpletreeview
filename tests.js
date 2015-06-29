@@ -65,7 +65,8 @@ describe('An existing tree', function () {
         value: 'root',
         children: [
             { value: 'child0', children: [
-                { value: 'child00' }
+                { value: 'child00' },
+                { value: 'child01' }
             ] },
             { value: 'child1' }
         ]
@@ -136,6 +137,17 @@ describe('An existing tree', function () {
         expect(function () {
             tree.nodeWithValue('42');
         }).toThrowError(SimpleTreeView.TreeDataError);
+    });
+
+    it('can provide a list of fully selected nodes', function () {
+        var tree = new SimpleTreeView({ data: testData });
+        var selection;
+        tree.nodeWithValue('child00').select();
+        tree.nodeWithValue('child01').select();
+
+        selection = tree.getSelection();
+        expect(selection[0].value).toEqual('child0');
+
     });
 });
 
@@ -335,6 +347,12 @@ describe('Tree rendering', function () {
         nodes = el.querySelectorAll('.stv-leaf');
         expect(nodes.length).toEqual(3);
 
+    });
+
+    it('attaches the node value as a data attribute to the node element', function () {
+        tree.render(1);
+        var node = el.querySelector('[data-value="child0"]');
+        expect(node).not.toBeNull();
     });
 });
 
