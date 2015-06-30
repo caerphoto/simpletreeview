@@ -73,6 +73,12 @@ call on it:
 - **copyData()**: returns a deep copy of the tree, limited to each node's
   `label`, `value`, `parent`, `state` and `children` properties.
 
+- **getSelection()**: returns a list of objects with `label` and `value`
+  properties, representing the currently selected nodes.
+
+- **setSelection(*selection*)**: reset the current selection to the given value,
+  which can be either a string representing a node value, or a list of strings.
+
 - **nodeAt(*location*)**: gets the node at the given location, which must be an
   array of indices, starting with the root, into each subsequent node's children
   list. For example, `[ 0, 0 ]` is the first child of the first child. Pass `[]`
@@ -83,12 +89,6 @@ call on it:
 - **nodeWithId(*id*)**: each node has a unique ID, which is also attached to its
   associated DOM node via the `data-node-id` attribute. This can be useful for
   event handling.
-
-- **getSelection()**: returns a list of objects with `label` and `value`
-  properties, representing the currently selected nodes.
-
-- **setSelection(*selection*)**: reset the current selection to the given value,
-  which can be either a string representing a node value, or a list of strings.
 
 - **render(*depth*)**: renders the tree in its element, optionally limited to
   the given nesting depth.
