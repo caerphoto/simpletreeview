@@ -73,8 +73,13 @@ call on it:
 - **copyData()**: returns a deep copy of the tree, limited to each node's
   `label`, `value`, `parent`, `state` and `children` properties.
 
-- **getSelection()**: returns a list of objects with `label` and `value`
-  properties, representing the currently selected nodes.
+- **getSelectedNodeS()**: returns a list of the current selected nodes. If a
+  parent node is fully selected, only it will be returned, not all of its
+  descendants.
+
+- **getSelection()**: returns a list of strings representing the values of the
+  currently selected nodes. Basically a convenient wrapper around
+  `getSelectedNodes()`.
 
 - **setSelection(*selection*)**: reset the current selection to the given value,
   which can be either a string representing a node value, or a list of strings.

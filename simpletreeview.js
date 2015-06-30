@@ -364,7 +364,7 @@
             this.__setEventHandlers();
             return this;
         },
-        __getSelectedNodes: function (node) {
+        getSelectedNodes: function (node) {
             var selection = [];
             var childSelection;
 
@@ -379,7 +379,7 @@
                     if (child.state === SELECTED) {
                         selection.push(child);
                     } else if (child.state === PARTIAL) {
-                        childSelection = this.__getSelectedNodes(child);
+                        childSelection = this.getSelectedNodes(child);
                         selection = selection.concat(childSelection);
                     }
                 }, this);
@@ -388,15 +388,10 @@
             return selection;
         },
         getSelection: function () {
-            return _(this.__getSelectedNodes()).map(function (node) {
-                return {
-                    label: node.label,
-                    value: node.value
-                };
-            });
+            return _(this.getSelectedNodes()).pluck('value');
         },
         setSelection: function (selection) {
-            var currentSelection = this.__getSelectedNodes();
+            var currentSelection = this.getSelectedNodes();
 
             _(currentSelection).each(function (node) {
                 node.deselect();

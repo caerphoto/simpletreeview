@@ -146,7 +146,7 @@ describe('An existing tree', function () {
         tree.nodeWithValue('child01').select();
 
         selection = tree.getSelection();
-        expect(selection[0].value).toEqual('child0');
+        expect(selection[0]).toEqual('child0');
     });
 
     it('can have a new selection applied, clearing the old one', function () {
@@ -157,8 +157,8 @@ describe('An existing tree', function () {
         tree.setSelection(selection);
 
         selection = tree.getSelection();
-        expect(selection[0].label).toEqual('child01');
-        expect(selection[1].label).toEqual('child1');
+        expect(selection[0]).toEqual('child01');
+        expect(selection[1]).toEqual('child1');
     });
 });
 
