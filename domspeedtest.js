@@ -47,7 +47,7 @@
     }
 
     $(treeElement).on('click', '.stv-checkbox', function () {
-        var sel = simpleTreeView.getSelection();
+        var sel = simpleTreeView.getSelectedNodes();
         selection.innerHTML = _.pluck(sel, 'label').join(',');
     });
 
