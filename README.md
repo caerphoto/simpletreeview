@@ -21,49 +21,54 @@ and array mapping functions ([lodash](https://lodash.com/) might also work), and
 
 ## Basic usage
 
-The main thing you need to supply the control is a tree data structure, since it
-obviously won’t be much use without one. The tree should look something like
-this:
+Once the script is included in your page, you can get started like so:
 
 ```javascript
-treeData = {
-    label: 'Root node',
-    value: '*',
-    children: [
-        {
-            label: 'Child 0',
-            value: 'c0',
-            state: SimpleTreeView.SELECTED
-        },
-        {
-            label: 'Child 1',
-            value: 'c1'
-        }
-    ]
-}
-```
+var tree = new SimpleTreeView({
+    data: {
+        label: '<div class="root">Root node</div>',
+        value: '*',
+        children: [
+            {
+                label: 'Child 0',
+                value: 'c0',
+                children: [
+                    { label: 'HelloWorld' },
+                    { label: 'LoremIpsum' }
+                ]
+            },
+            {
+                label: '<a href="#">Child 1</a>',
+                value: 'c1'
+            }
+        ]
+    },
+    initialSelection: [ 'c0' ],
+    element: document.querySelector('#tree'),
+    HTMLLabels: true
+});
 
-Most of these properties are optional, but you’ll need to supply, at minimum,
-either a `label` or a `value`; whichever is missing will be copied from the
-other (to simplify rendering).
-
-To actually set up a tree, do the following:
-
-```javascript
-var tree = new SimpleTreeView({ data: treeData });
+tree.render();
 ```
 
 ## Options
 
 You can pass the following options when creating a tree:
 
-- `data`: as described above, the actual data structure used to build and render
-  the tree.
-- `element`: an HTML element into which you’d like to render the tree. You can
+- **data**: as described above, the actual data structure used to build and
+  render the tree. Consists of an object with, at minimum, either a `label` or a
+  `value` property. Can have a `children` property, a list of objects of this
+  structure, to arbitrary nesting depth.
+
+- **initialSelection**: a string or list of strings representing the values of
+  nodes that should be set to selected initially.
+
+- **element**: an HTML element into which you’d like to render the tree. You can
   use the tree without getting the DOM involved, but obviously it won’t be able
   to render unless you give it somewhere to go.
-- `HTMLLabels`: set to `true` if you want to use HTML in node element labels; by
-  default this is `false`, so labels are created as plain text.
+
+- **HTMLLabels**: set to `true` if you want to use HTML in node element labels;
+  by default this is `false`, so labels are created as plain text.
 
 ## API
 

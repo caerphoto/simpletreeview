@@ -61,10 +61,8 @@
 
         this.tree = tree;
         this.parent = parent;
-        this.state = _(nodeAttrs).has('state') ?  nodeAttrs.state : UNSELECTED;
-
+        this.state = UNSELECTED;
         this.id = _.uniqueId('STV_');
-
         this.elements = null;
 
         if (_(nodeAttrs).has('children') && _(nodeAttrs.children).isArray() &&
@@ -262,6 +260,9 @@
         }
         if (o.element) {
             this.setElement(o.element);
+        }
+        if (o.initialSelection) {
+            this.setSelection(o.initialSelection);
         }
     };
 

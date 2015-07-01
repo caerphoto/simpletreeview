@@ -53,6 +53,35 @@
         return count;
     }
 
+    (function () {
+        var tree = new SimpleTreeView({
+            data: {
+                label: '<div class="root">Root node</div>',
+                value: '*',
+                children: [
+                    {
+                        label: 'Child 0',
+                        value: 'c0',
+                        state: SimpleTreeView.SELECTED,
+                        children: [
+                            { label: 'HelloWorld' },
+                            { label: 'LoremIpsum' }
+                        ]
+                    },
+                    {
+                        label: '<a href="#">Child 1</a>',
+                        value: 'c1'
+                    }
+                ]
+            },
+            initialSelection: [ 'c0' ],
+            element: document.querySelector('#tree'),
+            HTMLLabels: true
+        });
+
+        tree.render();
+    }());
+
     $(treeElement).on('click', '.stv-checkbox', function () {
         var sel = simpleTreeView.getSelectedNodes();
         selection.innerHTML = _.pluck(sel, 'label').join(',');

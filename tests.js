@@ -20,7 +20,7 @@ describe('Tree creation', function () {
         expect(tree.getData().value).toEqual(testData.value);
     });
 
-    it('uses a node\'s label for its value if no label is given', function () {
+    it('uses a node label for its value if no label is given', function () {
         var testData = {
             label: 'Root Node'
         };
@@ -31,7 +31,7 @@ describe('Tree creation', function () {
         expect(node.label).toEqual(node.value);
     });
 
-    it('uses a node\'s value for its label if no value is given', function () {
+    it('uses a node value for its label if no value is given', function () {
         var testData = {
             value: 'root-node'
         };
@@ -42,7 +42,7 @@ describe('Tree creation', function () {
         expect(node.value).toEqual(node.label);
     });
 
-    it ('adds missing properties if necessary', function () {
+    it('adds missing properties if necessary', function () {
         var testData = {
             label: 'Root Node',
             value: 'root-node',
@@ -57,6 +57,21 @@ describe('Tree creation', function () {
 
         expect(data.hasOwnProperty('parent')).toBe(true);
         expect(data.hasOwnProperty('state')).toBe(true);
+    });
+
+    it('can apply an initial selection', function () {
+        var testData = {
+            value: 'root-node',
+            children: [
+                { value: 'child0' },
+                { value: 'child1' }
+            ]
+        };
+        var tree = new SimpleTreeView({
+            data: testData,
+            initialSelection: [ 'child1' ]
+        });
+        expect(tree.getData().children[1].state).toEqual(SELECTED);
     });
 });
 
@@ -163,15 +178,19 @@ describe('An existing tree', function () {
 });
 
 describe('A node', function () {
-    var testData = {
-        value: 'root',
-        children: [
-            { value: 'child0', children: [
-                { value: 'child00' }
-            ] },
-            { value: 'child1' }
-        ]
-    };
+    var testData;
+
+    beforeEach(function () {
+        testData = {
+            value: 'root',
+            children: [
+                { value: 'child0', children: [
+                    { value: 'child00' }
+                ] },
+                { value: 'child1' }
+            ]
+        };
+    });
 
     it('can be marked as selected', function () {
         var tree = new SimpleTreeView({ data: testData });
