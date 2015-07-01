@@ -131,8 +131,12 @@ should **be careful modifying this property**, lest you confuse the tree.
 ## HTML elements and CSS classes
 
 The root node of the tree is a `div` element, and all other nodes are `li`s.
-Both have the class `stv-node`, but the root has `stv-root-node` while all
+Both have the class `stv-node`; the root also has `stv-root-node` while all
 others have `stv-child-node`.
+
+If a node has children, its element is also given a class of `stv-parent`,
+otherwise it has the class `stv-leaf`. This is useful for hiding the expander as
+appropriate.
 
 Each node’s `state` property is represented on its element by the classes
 `stv-selected`, `stv-partially-selected` and `stv-unselected`.
