@@ -170,9 +170,12 @@ Within the node `div` or `li` element there are the following:
   `HTMLLabels: true` or not when creating the tree, contains either an HTML text
   node representing the node’s `label` property, or the node’s `label` property
   inserted directly as HTML.
+
 - A `span` with class `stv-checkbox`: clicking this toggles the selection state
   of the node.
+
 - A `span` with class `stv-expander`: clicking this toggles the `stv-expanded`
   and `stv-collapsed` classes, as explained above.
+
 - A `ul` with class `stv-child-list`: container for the elements of the node’s
   children.
