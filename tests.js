@@ -396,12 +396,14 @@ describe('Node checkbox event handling', function () {
         expect(node.state).toEqual(SELECTED);
     });
 
+    /* not sure if I want this behaviour or not
     it('sets unselected child node state to selected when child label is clicked', function () {
         tree.render();
         var node = tree.nodeWithValue('child00');
         $(node.elements.label).trigger('click');
         expect(node.state).toEqual(SELECTED);
     });
+    */
 
     it('sets unselected child node element class to "stv-selected" when child checkbox is clicked', function () {
         tree.render();

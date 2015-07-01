@@ -22,18 +22,14 @@ li {
     margin-left: 35px;
 }
 
+a,
 .ac,
-.stv-expander:hover,
-.stv-label:hover {
+.stv-expander:hover {
     color: #0084d1;
 }
 
 .stv-child-node {
     border-left: 1px dotted #ddd;
-}
-
-.stv-label {
-    cursor: pointer;
 }
 
 .stv-checkbox {

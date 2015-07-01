@@ -160,7 +160,11 @@
             el.className += ' stv-node';
 
             label.className = 'stv-label';
-            label.appendChild(D.createTextNode(this.label));
+            if (this.tree.__options.HTMLLabels) {
+                label.innerHTML = this.label;
+            } else {
+                label.appendChild(D.createTextNode(this.label));
+            }
 
             checkbox.className = 'stv-checkbox';
             if (this.state === UNSELECTED) {
@@ -201,6 +205,9 @@
                 });
             }
 
+            // This parameter is used when creating elements for a
+            // newly-expanded child list that was beyond the original recurse
+            // depth.
             if (appendToParentList) {
                 this.parent.elements.childList.appendChild(el);
             }
@@ -235,7 +242,9 @@
         var o;
 
         this.__root = {};
-        this.__options = {};
+        this.__options = {
+            HTMLLabels: false
+        };
         this.__el = null;
 
         // Every node in the tree has an entry in the hash, keyed by the node's
@@ -413,7 +422,7 @@
         },
         __setEventHandlers: function () {
             var tree = this;
-            this.__$rootElement.on('click', '.stv-checkbox, .stv-label', function () {
+            this.__$rootElement.on('click', '.stv-checkbox', function () {
                 var nodeId = this.parentNode.getAttribute('data-node-id');
                 var node = tree.nodeWithId(nodeId);
                 if (!node) {

@@ -15,10 +15,12 @@
 
     function randomString() {
         var i;
-        var l = Math.floor(Math.random() * 12);
+        var l = Math.floor(Math.random() * 11) + 1;
         var s = '';
+        var c;
         for (i = 0; i < l; i += 1) {
-            s += String.fromCharCode(Math.floor(Math.random() * 26) + 65);
+            c = i === 0 ? 65 : 97;
+            s += String.fromCharCode(Math.floor(Math.random() * 26) + c);
         }
         return s;
     }
@@ -34,7 +36,8 @@
 
         for (i = 0; i < l; i += 1) {
             parent.children[i] = {
-                label: depth + '/' + i + ': ' + randomString(),
+                label:  depth + '/' + i + ': ' + '<a href="#">' + randomString() +
+                    '</a>',
                 value: depth + '/' + i
             };
             count += 1;
@@ -75,7 +78,8 @@
 
         simpleTreeView = new SimpleTreeView({
             data: treeData,
-            element: treeElement
+            element: treeElement,
+            HTMLLabels: true
         });
 
         creationTime = new Date();
