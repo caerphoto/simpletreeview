@@ -68,6 +68,8 @@ You can pass the following options when creating a tree:
 
 ## API
 
+### Tree
+
 Once you’ve created an instance of a tree, there are a number of methods you can
 call on it:
 
@@ -112,7 +114,9 @@ call on it:
 - **render(*depth*)**: renders the tree in its element, optionally limited to
   the given nesting depth.
 
-Nodes also have a couple of methods you can call on them:
+### Nodes
+
+Nodes have a couple of methods you can call on them:
 
 - **select()**: marks the node as selected, also cascading the effect as
   appropriate up and down the tree, and updating the affected nodes’ associated
@@ -120,13 +124,28 @@ Nodes also have a couple of methods you can call on them:
 
 - **deselect()**: the inverse of `select()`.
 
-A node’s selection state is represented by its `state` property, which is one of
-`SimpleTreeView.UNSELECTED` (0), `SimpleTreeView.PARTIAL` (1) or
-`SimpleTreeView.SELECTED` (2).
+Nodes also have the following properties, all of which should be considered
+**read-only**:
 
-In addition, nodes have an `elements` property which contains a reference to
-each HTML element making up the rendered node, as detailed below. Obviously you
-should **be careful modifying this property**, lest you confuse the tree.
+- `label`: the node’s label, as displayed on the rendered tree.
+
+- `value`: an arbitrary value assigned to the node.
+
+- `state`: one of `SimpleTreeView.UNSELECTED` (0), `SimpleTreeView.PARTIAL` (1)
+  or `SimpleTreeView.SELECTED` (2).
+
+- `parent`: a reference to the node's parent, or `null` if the node is the root.
+
+- `children`: a list of the node’s children. If the node has no children, the
+  list will be empty.
+
+- `tree`: a reference to the instance of SimpleTreeView the node belongs to.
+
+- `id`: a unique ID in the form `STV_x` where `x` is a number.
+
+- `elements`: contains a reference to each HTML element making up the rendered
+  node, as detailed below. Obviously you should **be careful modifying this
+  property**, lest you confuse the tree.
 
 ## HTML elements and CSS classes
 
