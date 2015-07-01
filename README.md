@@ -87,7 +87,7 @@ call on it:
 - **copyData()**: returns a deep copy of the tree, limited to each node’s
   `label`, `value`, `parent`, `state` and `children` properties.
 
-- **getSelectedNodeS()**: returns a list of the current selected nodes. If a
+- **getSelectedNodes()**: returns a list of the current selected nodes. If a
   parent node is fully selected, only it will be returned, not all of its
   descendants.
 
