@@ -164,18 +164,18 @@ A node does not itself keep track of whether its child list is expanded or not �
 the classes `stv-expanded` and `stv-collapsed` are simply toggled on and off on
 the node’s element instead.
 
-Within the node `div` or `li` element there are the following:
+Within the node `div` or `li` element there are the following, in this order:
+
+- A `span` with class `stv-expander`: clicking this toggles the `stv-expanded`
+  and `stv-collapsed` classes, as explained above.
+
+- A `span` with class `stv-checkbox`: clicking this toggles the selection state
+  of the node.
 
 - A `label` with class `stv-label`: depending on whether you specify
   `HTMLLabels: true` or not when creating the tree, contains either an HTML text
   node representing the node’s `label` property, or the node’s `label` property
   inserted directly as HTML.
-
-- A `span` with class `stv-checkbox`: clicking this toggles the selection state
-  of the node.
-
-- A `span` with class `stv-expander`: clicking this toggles the `stv-expanded`
-  and `stv-collapsed` classes, as explained above.
 
 - A `ul` with class `stv-child-list`: container for the elements of the node’s
   children.
