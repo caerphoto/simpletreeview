@@ -148,15 +148,15 @@ Nodes also have the following properties, all of which should be considered
 
 ## HTML elements and CSS classes
 
-The root node of the tree is a `div` element, and all other nodes are `li`s.
-Both have the class `stv-node`; the root also has `stv-root-node` while all
-others have `stv-child-node`.
+The element for the root node of the tree is a `div`, and all other nodes have
+`li`s.  Both have the class `stv-node`; the root also has `stv-root-node` while
+all others have `stv-child-node`.
 
 A node’s ID is available on its element via the `data-node-id` attribute.
 
 If a node has children, its element is also given a class of `stv-parent`,
-otherwise it has the class `stv-leaf`. This is useful for hiding the expander as
-appropriate.
+otherwise it gets the class `stv-leaf`. This is useful for hiding the expander
+as appropriate.
 
 Each node’s `state` property is represented on its element by the classes
 `stv-selected`, `stv-partially-selected` and `stv-unselected`.
