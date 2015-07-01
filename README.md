@@ -38,7 +38,6 @@ treeData = {
         {
             label: 'Child 1',
             value: 'c1'
-            state: SimpleTreeView.UNSELECTED
         }
     ]
 }
@@ -108,8 +107,8 @@ call on it:
 - **nodeWithValue(*value*)**: gets the (first) node whose `value` property matches the given value.
 
 - **nodeWithId(*id*)**: each node has a unique ID, which is also attached to its
-  associated DOM node via the `data-node-id` attribute. This can be useful for
-  event handling.
+  associated DOM element via the `data-node-id` attribute. This can be useful
+  for event handling.
 
 - **render(*depth*)**: renders the tree in its element, optionally limited to
   the given nesting depth.
@@ -127,31 +126,33 @@ Nodes have a couple of methods you can call on them:
 Nodes also have the following properties, all of which should be considered
 **read-only**:
 
-- `label`: the node’s label, as displayed on the rendered tree.
+- **label**: the node’s label, as displayed on the rendered tree.
 
-- `value`: an arbitrary value assigned to the node.
+- **value**: an arbitrary value assigned to the node.
 
-- `state`: one of `SimpleTreeView.UNSELECTED` (0), `SimpleTreeView.PARTIAL` (1)
+- **state**: one of `SimpleTreeView.UNSELECTED` (0), `SimpleTreeView.PARTIAL` (1)
   or `SimpleTreeView.SELECTED` (2).
 
-- `parent`: a reference to the node's parent, or `null` if the node is the root.
+- **parent**: a reference to the node’s parent, or `null` if the node is the root.
 
-- `children`: a list of the node’s children. If the node has no children, the
+- **children**: a list of the node’s children. If the node has no children, the
   list will be empty.
 
-- `tree`: a reference to the instance of SimpleTreeView the node belongs to.
+- **tree**: a reference to the instance of SimpleTreeView the node belongs to.
 
-- `id`: a unique ID in the form `STV_x` where `x` is a number.
+- **id**: a unique ID in the form `STV_x` where `x` is a number.
 
-- `elements`: contains a reference to each HTML element making up the rendered
-  node, as detailed below. Obviously you should **be careful modifying this
-  property**, lest you confuse the tree.
+- **elements**: contains a reference to each HTML element making up the rendered
+  node, as detailed below. Obviously you should **be careful modifying these**,
+  lest you confuse the tree.
 
 ## HTML elements and CSS classes
 
 The root node of the tree is a `div` element, and all other nodes are `li`s.
 Both have the class `stv-node`; the root also has `stv-root-node` while all
 others have `stv-child-node`.
+
+A node’s ID is available on its element via the `data-node-id` attribute.
 
 If a node has children, its element is also given a class of `stv-parent`,
 otherwise it has the class `stv-leaf`. This is useful for hiding the expander as
