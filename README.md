@@ -10,7 +10,7 @@ page and styled with rules in `domspeedtest.css`:
 ![simple tree view example](http://andyf.me/media/misc/simpletreeview-example.png)
 
 You’re encouraged to explore the created HTML element structure and classnames
-using your browser’s devtools. The elements and classes applied to them are
+using your browser’s devtools. The elements, and classes applied to them, are
 explained later on.
 
 ## Dependencies
