@@ -13,16 +13,21 @@
     var timingTotal = document.querySelector('#timing_total');
     var simpleTreeView;
 
+    var lipsumCounter = 0;
+
+    var loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'.toLowerCase().match(/\w+/g);
+
+    loremIpsum = _.map(loremIpsum, function (word) {
+        return word.charAt(0).toUpperCase() + word.substring(1);
+    });
+
     function randomString() {
-        var i;
-        var l = Math.floor(Math.random() * 11) + 1;
-        var s = '';
-        var c;
-        for (i = 0; i < l; i += 1) {
-            c = i === 0 ? 65 : 97;
-            s += String.fromCharCode(Math.floor(Math.random() * 26) + c);
+        var result = loremIpsum[lipsumCounter];
+        lipsumCounter += 1;
+        if (lipsumCounter === loremIpsum.length) {
+            lipsumCounter = 0;
         }
-        return s;
+        return result;
     }
 
     function createNodes(parent, max, depth, recurse) {
@@ -36,8 +41,7 @@
 
         for (i = 0; i < l; i += 1) {
             parent.children[i] = {
-                label:  depth + '/' + i + ': ' + '<a href="#">' + randomString() +
-                    '</a>',
+                label: randomString(),
                 value: depth + '/' + i
             };
             count += 1;
