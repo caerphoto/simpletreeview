@@ -1,7 +1,7 @@
-/*global _, $ */
+/*global define, _, $ */
 (function () {
-    var self = this;
-    var D = self.document;
+    var global = this;
+    var D = global.document;
 
     var UNSELECTED = 0;
     var PARTIAL = 1;
@@ -462,5 +462,12 @@
     SimpleTreeView.PARTIAL = PARTIAL;
     SimpleTreeView.SELECTED = SELECTED;
 
-    self.SimpleTreeView = SimpleTreeView;
+    global.SimpleTreeView = SimpleTreeView;
+
+    if (typeof define === 'function' && define.amd) {
+        define('simpletreeview', [], function() {
+            return SimpleTreeView;
+        });
+    }
+
 }).call(this);
