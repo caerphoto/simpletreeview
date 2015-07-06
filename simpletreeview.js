@@ -464,6 +464,7 @@
 
     global.SimpleTreeView = SimpleTreeView;
 
+    // RequireJS/AMD compatibility.
     if (typeof define === 'function' && define.amd) {
         define('simpletreeview', [], function() {
             return SimpleTreeView;
