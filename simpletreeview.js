@@ -403,9 +403,7 @@
         setSelection: function (selection) {
             var currentSelection = this.getSelectedNodes();
 
-            _(currentSelection).each(function (node) {
-                node.deselect();
-            });
+            _(currentSelection).invoke('deselect');
 
             if (_.isString(selection)) {
                 this.nodeWithValue(selection).select();
@@ -466,7 +464,7 @@
 
     // RequireJS/AMD compatibility.
     if (typeof define === 'function' && define.amd) {
-        define('simpletreeview', [], function() {
+        define(function() {
             return SimpleTreeView;
         });
     }
