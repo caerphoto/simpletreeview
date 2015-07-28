@@ -118,6 +118,13 @@ call on it:
 - **render(*depth*)**: renders the tree in its element, optionally limited to
   the given nesting depth.
 
+The tree has an input box (with class `stv-filter-input`) before its root
+element that allows filtering/searching. Matching is case-insensitive, and done
+against nodes’ labels and values.
+
+If you don’t filter functionality, you can pass `filter: false` in the options
+when creating a tree.
+
 ### Nodes
 
 Nodes have a couple of methods you can call on them:
@@ -169,6 +176,13 @@ Each node’s `state` property is represented on its element by the classes
 A node does not itself keep track of whether its child list is expanded or not –
 the classes `stv-expanded` and `stv-collapsed` are simply toggled on and off on
 the node’s element instead.
+
+When filtering is in progress, the root nodes gets the class `stv-filtering`
+added to it, and any matching nodes get `stv-filter-match`. In addition, all
+ancestors to matching nodes get `stv-filter-descendant-match`, to properly allow
+hiding of non-matching nodes while keeping the branches containing matching
+nodes visible. See **domspeedtest.html** for an example of how you could use
+these classes.
 
 Within the node `div` or `li` element there are the following, in this order:
 

@@ -32,6 +32,23 @@ a,
     border-left: 1px dotted #ddd;
 }
 
+.stv-filtering .stv-node {
+    display: none;
+}
+
+.stv-filtering .stv-node.stv-filter-match,
+.stv-filtering .stv-node.stv-filter-descendant-match {
+    display: block;
+}
+
+.stv-filter-descendant-match > .stv-label {
+    /*color: #888;*/
+}
+
+.stv-filter-match > .stv-label {
+    background-color: #dcf5dd;
+}
+
 .stv-checkbox {
     display: inline-block;
     line-height: 16px;

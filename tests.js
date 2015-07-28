@@ -1,4 +1,4 @@
-/*global SimpleTreeView, beforeEach, describe, it, expect */
+/*global $, SimpleTreeView, jasmine, beforeEach, describe, it, expect */
 var SELECTED = SimpleTreeView.SELECTED;
 var PARTIAL = SimpleTreeView.PARTIAL;
 var UNSELECTED = SimpleTreeView.UNSELECTED;
@@ -522,5 +522,75 @@ describe('Node expander event handling', function () {
         $(node.elements.expander).trigger('click');
         $(node.elements.expander).trigger('click');
         expect(node.elements.childList.children.length).toEqual(2);
+    });
+});
+
+describe('Tree filtering', function () {
+    var testData = {
+        value: 'root',
+        children: [
+            { value: 'child0', children: [
+                { value: 'child00' },
+                { value: 'child01' }
+            ] },
+            { value: 'child1' }
+        ]
+    };
+    var el;
+    var tree;
+
+    beforeEach(function () {
+        el = document.createElement('div');
+        tree = new SimpleTreeView({
+            data: testData,
+            element: el
+        });
+    });
+
+    it('provides a filter text input box by default', function () {
+        var input;
+        tree.render();
+        input = el.querySelector('input');
+        expect(input).not.toBeNull();
+        expect(tree.elFilter).toBeDefined();
+    });
+
+    it('does not create a filter input if the "filter" option is false', function () {
+        tree = new SimpleTreeView({
+            data: testData,
+            element: el,
+            filter: false
+        });
+
+        tree.render();
+        expect(tree.elFilter).not.toBeDefined();
+    });
+
+    it('sets an appropriate class name on the element when filtering', function () {
+        jasmine.clock().install();
+
+        tree.render();
+        tree.elFilter.value = 'child';
+        $(tree.elFilter).trigger('keyup');
+
+        // Class name is changed after a 500ms delay.
+        jasmine.clock().tick(501);
+        expect(tree.getData().elements.el.className).toMatch(/stv-filtering/);
+
+        jasmine.clock().uninstall();
+    });
+
+    it('marks filtered node elements with the correct class', function () {
+        jasmine.clock().install();
+
+        tree.render();
+        tree.elFilter.value = 'child';
+        $(tree.elFilter).trigger('keyup');
+
+        // Class name is changed after a 500ms delay.
+        jasmine.clock().tick(501);
+        expect($(tree.getElement()).find('.stv-filter-match').length).toEqual(4);
+
+        jasmine.clock().uninstall();
     });
 });

@@ -137,6 +137,20 @@
     }
 
     _(TreeNode.prototype).extend({
+        labelOrValueMatches: function (lowerCaseTerm) {
+            var label = this.label.toLowerCase();
+            var value;
+            if (label.indexOf(lowerCaseTerm) !== -1) {
+                return true;
+            }
+
+            value = this.value.toLowerCase();
+            if (value.indexOf(lowerCaseTerm) !== -1) {
+                return true;
+            }
+
+            return false;
+        },
         __createElements: function (recurseDepth, appendToParentList) {
             var el;
             var label = D.createElement('label');
@@ -241,7 +255,8 @@
 
         this.__root = {};
         this.__options = {
-            HTMLLabels: false
+            HTMLLabels: false,
+            filter: true
         };
         this.__el = null;
 
@@ -258,12 +273,18 @@
         if (o.data) {
             this.setData(o.data);
         }
+
+        if (o.filter) {
+            this.__createFilterElement();
+        }
+
         if (o.element) {
             this.setElement(o.element);
         }
         if (o.initialSelection) {
             this.setSelection(o.initialSelection);
         }
+
     };
 
     function copyNode(node) {
@@ -300,9 +321,43 @@
         }
     }
 
-    function toggleNodeExpansion(node) {
-        node.elements.$el.toggleClass('stv-collapsed');
-        node.elements.$el.toggleClass('stv-expanded');
+    function findNodes(root, lowerCaseTerm) {
+        // Return all nodes whose value or label match the given term.
+        var nodes = [];
+
+        if (!root) {
+            return nodes;
+        }
+
+        if (root.labelOrValueMatches(lowerCaseTerm)) {
+            nodes.push(root);
+        }
+
+        if (root.children.length === 0) {
+            return nodes;
+        }
+
+        _.each(root.children, function (child) {
+            if (child.labelOrValueMatches(lowerCaseTerm)) {
+                nodes.push(child);
+            }
+            nodes = nodes.concat(findNodes(child, lowerCaseTerm));
+        });
+        return nodes;
+    }
+
+    function toggleNodeExpansion(node, expanded) {
+        if (expanded) {
+            if (node.elements === null) {
+                console.log(node);
+            }
+            node.elements.$el.removeClass('stv-collapsed');
+            node.elements.$el.addClass('stv-expanded');
+        } else {
+            node.elements.$el.toggleClass('stv-collapsed');
+            node.elements.$el.toggleClass('stv-expanded');
+        }
+
         if (node.elements.$el.hasClass('stv-expanded') && node.children.length > 0) {
             _(node.children).each(function (child) {
                 if (!child.elements) {
@@ -310,6 +365,16 @@
                 }
             });
         }
+    }
+
+    function ensureElements(node) {
+        if (node.parent && !node.parent.elements) {
+            ensureElements(node.parent);
+        }
+        if (node.parent) {
+            toggleNodeExpansion(node.parent, true);
+        }
+
     }
 
     function isElement(el) {
@@ -419,8 +484,43 @@
 
             throw new TypeError('Expected string or array when setting selection, but got ' + (typeof selection));
         },
+
+        __createFilterElement: function () {
+            // Set up the filter input box. Event handlers are set up separately
+            // in __setEventHandlers().
+            var input = this.elFilter = document.createElement('input');
+            input.className = 'stv-filter-input';
+            input.type = 'text';
+            this.$elFilter = $(this.elFilter);
+        },
+
+        __applyFilter: function (term) {
+            var matchedNodes;
+            this.__$rootElement.toggleClass('stv-filtering', !!term);
+
+            this.__$rootElement.
+                find('.stv-filter-match').
+                removeClass('stv-filter-match');
+            this.__$rootElement.
+                find('.stv-filter-descendant-match').
+                removeClass('stv-filter-descendant-match');
+
+            if (!term) {
+                return;
+            }
+
+            matchedNodes = findNodes(this.getData(), term.toLowerCase());
+
+            _(matchedNodes).each(function (node) {
+                ensureElements(node);
+                node.elements.$el.addClass('stv-filter-match');
+                node.elements.$el.parentsUntil(this.__$el, '.stv-node').addClass('stv-filter-descendant-match');
+            });
+        },
+
         __setEventHandlers: function () {
             var tree = this;
+
             this.__$rootElement.on('click', '.stv-checkbox', function () {
                 var nodeId = this.parentNode.getAttribute('data-node-id');
                 var node = tree.nodeWithId(nodeId);
@@ -442,6 +542,19 @@
                 }
                 toggleNodeExpansion(node);
             });
+
+            if (!this.elFilter) {
+                return;
+            }
+
+            this.$elFilter.on('keyup', function () {
+                var term = this.value;
+
+                clearTimeout(tree.__filterTimeout);
+                tree.__filterTimeout = setTimeout(function () {
+                    tree.__applyFilter(term);
+                }, 500);
+            });
         },
         render: function (recurseDepth) {
             if (!this.__el || !isElement(this.__el)) {
@@ -449,6 +562,10 @@
             }
             recurseDepth = _.isNumber(recurseDepth) ? recurseDepth : -1;
             this.__root.__createElements(recurseDepth);
+
+            if (this.elFilter) {
+                this.__el.appendChild(this.elFilter);
+            }
 
             this.__el.appendChild(this.__rootElement);
         }
@@ -464,7 +581,7 @@
 
     // RequireJS/AMD compatibility.
     if (typeof define === 'function' && define.amd) {
-        define(function() {
+        define(['underscore', 'jquery'], function() {
             return SimpleTreeView;
         });
     }

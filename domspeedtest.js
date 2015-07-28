@@ -1,4 +1,4 @@
-/*global SimpleTreeView, _ */
+/*global $, SimpleTreeView, _ */
 (function () {
     var btn = document.querySelector('#go');
     var num = document.querySelector('#num');
@@ -109,7 +109,7 @@
         treeElement.innerHTML = '';
         clearTime = new Date();
 
-        simpleTreeView = new SimpleTreeView({
+        window.tree = simpleTreeView = new SimpleTreeView({
             data: treeData,
             element: treeElement,
             HTMLLabels: true
