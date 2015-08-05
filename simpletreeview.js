@@ -488,9 +488,18 @@
         __createFilterElement: function () {
             // Set up the filter input box. Event handlers are set up separately
             // in __setEventHandlers().
-            var input = this.elFilter = document.createElement('input');
+            var elFilter = this.elFilter = document.createElement('div');
+            var input = document.createElement('input');
+            var label = document.createElement('label');
+
             input.className = 'stv-filter-input';
             input.type = 'text';
+            label.appendChild(document.createTextNode('Search:'));
+            label.className = 'stv-filter-label';
+
+            elFilter.appendChild(label);
+            elFilter.appendChild(input);
+
             this.$elFilter = $(this.elFilter);
         },
 
@@ -547,7 +556,7 @@
                 return;
             }
 
-            this.$elFilter.on('keyup', function () {
+            this.$elFilter.on('keyup', 'input', function () {
                 var term = this.value;
 
                 clearTimeout(tree.__filterTimeout);
