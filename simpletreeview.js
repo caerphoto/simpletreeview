@@ -494,7 +494,7 @@
 
             input.className = 'stv-filter-input';
             input.type = 'text';
-            label.appendChild(document.createTextNode('Search:'));
+            label.appendChild(document.createTextNode('Search'));
             label.className = 'stv-filter-label';
 
             elFilter.appendChild(label);
