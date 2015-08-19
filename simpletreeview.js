@@ -263,6 +263,7 @@
         }
     };
 
+    // Tree helper functions ---------------------------------------------------
 
     function copyNode(node) {
         return {
@@ -362,7 +363,8 @@
             el.nodeType === DOCUMENT_FRAGMENT_NODE);
     }
 
-    // #########  TREE  #########
+    // Main tree object --------------------------------------------------------
+
     var SimpleTreeView = {
         create: function (opts) {
             var o;

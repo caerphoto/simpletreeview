@@ -199,3 +199,8 @@ Within the node `div` or `li` element there are the following, in this order:
 
 - A `ul` with class `stv-child-list`: container for the elements of the node’s
   children.
+
+## Private methods and properties
+
+Trees and their nodes have a number of properties whose names begin with `__`
+which should be considered private, and should not be used.
