@@ -24,7 +24,7 @@ and array mapping functions ([lodash](https://lodash.com/) might also work), and
 Once the script is included in your page, you can get started like so:
 
 ```javascript
-var tree = new SimpleTreeView({
+var tree = SimpleTreeView.create({
     data: {
         label: '<div class="root">Root node</div>',
         value: '*',
