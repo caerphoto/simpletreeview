@@ -54,7 +54,7 @@
     }
 
     (function () {
-        var tree = new SimpleTreeView({
+        var tree = SimpleTreeView.create({
             data: {
                 label: '<div class="root">Root node</div>',
                 value: '*',
@@ -109,7 +109,7 @@
         treeElement.innerHTML = '';
         clearTime = new Date();
 
-        window.tree = simpleTreeView = new SimpleTreeView({
+        window.tree = simpleTreeView = SimpleTreeView.create({
             data: treeData,
             element: treeElement,
             HTMLLabels: true

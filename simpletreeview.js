@@ -29,55 +29,7 @@
     TreeDataError.prototype = new Error();
     TreeDataError.prototype.constructor = TreeDataError;
 
-    var TreeNode = function (nodeAttrs, parent, tree) {
-        // Create a new node based on the given node data, filling in missing
-        // properties if possible, assingning the given parent to it, then
-        // recursively process each of its children, if any.
-
-        if (!nodeAttrs) {
-            throw 'Attempted to call prepareNode with no data';
-        }
-
-        // A node with no label or value property is invalid, unless it's
-        // the root node.
-        if (parent && !_(nodeAttrs).has('label') && !_(nodeAttrs).has('value')) {
-            throw 'Encountered tree node with no label or value';
-        }
-
-        if (_(nodeAttrs).has('value') && !_(nodeAttrs).has('label')) {
-            this.value = nodeAttrs.value;
-            this.label = nodeAttrs.value;
-        }
-
-        if (_(nodeAttrs).has('label') && !_(nodeAttrs).has('value')) {
-            this.label = nodeAttrs.label;
-            this.value = nodeAttrs.label;
-        }
-
-        if (_(nodeAttrs).has('label') && _(nodeAttrs).has('value')) {
-            this.label = nodeAttrs.label;
-            this.value = nodeAttrs.value;
-        }
-
-        this.tree = tree;
-        this.parent = parent;
-        this.state = UNSELECTED;
-        this.id = _.uniqueId('STV_');
-        this.elements = null;
-
-        if (_(nodeAttrs).has('children') && _(nodeAttrs.children).isArray() &&
-            nodeAttrs.children.length) {
-            this.children = _(nodeAttrs.children).map(function (child) {
-                return new TreeNode(child, this, tree);
-            }, this);
-        } else {
-            this.children = [];
-        }
-        if (tree.__nodeHash[this.id]) {
-            throw new TreeDataError('ID of ' + this.id + 'already exists');
-        }
-        this.tree.__nodeHash[this.id] = this;
-    };
+    // Node helper functions ---------------------------------------------------
 
     function setChildrenState(node, state) {
         _(node.children).each(function (child) {
@@ -136,7 +88,151 @@
         }
     }
 
-    _(TreeNode.prototype).extend({
+    function createElements(recurseDepth, appendToParentList) {
+        var el;
+        var label = D.createElement('label');
+        var checkbox = D.createElement('span');
+        var expander = D.createElement('span');
+        var childList;
+
+        if (this.parent) {
+            // Node is a child, so put its elements in an <li>
+            el = D.createElement('li');
+            el.className = 'stv-child-node';
+        } else {
+            // Node is the root, so add its elements to the tree's element
+            el = this.tree.__rootElement;
+            el.className = 'stv-root-node';
+        }
+        el.setAttribute('data-node-id', this.id);
+        el.setAttribute('data-value', this.value);
+        el.className += ' stv-node';
+
+        label.className = 'stv-label';
+        if (this.tree.__options.HTMLLabels) {
+            label.innerHTML = this.label;
+        } else {
+            label.appendChild(D.createTextNode(this.label));
+        }
+
+        checkbox.className = 'stv-checkbox';
+        if (this.state === UNSELECTED) {
+            el.className += ' stv-unselected';
+        } else if (this.state === PARTIAL) {
+            el.className += ' stv-partially-selected';
+        } else {
+            el.className += ' stv-selected';
+        }
+
+        expander.className = 'stv-expander';
+        if (recurseDepth === 0 && this.children.length > 0) {
+            el.className += ' stv-collapsed';
+        } else if (this.children.length > 0) {
+            el.className += ' stv-expanded';
+        }
+
+        el.appendChild(expander);
+        el.appendChild(checkbox);
+        el.appendChild(label);
+
+        if (this.children.length > 0) {
+            childList = D.createElement('ul');
+            childList.className = 'stv-child-list';
+            el.appendChild(childList);
+            el.className += ' stv-parent';
+        } else {
+            childList = null;
+            el.className += ' stv-leaf';
+        }
+
+        // Check recurseDepth against exactly 0 so that -1 can be passed to
+        // mean 'indefinite'.
+        if (this.children.length > 0 && recurseDepth !== 0) {
+            _(this.children).each(function (child) {
+                createElements.call(child, (recurseDepth || 0) - 1);
+                childList.appendChild(child.elements.el);
+            });
+        }
+
+        // This parameter is used when creating elements for a
+        // newly-expanded child list that was beyond the original recurse
+        // depth.
+        if (appendToParentList) {
+            this.parent.elements.childList.appendChild(el);
+        }
+
+        this.elements = {
+            label: label,
+            childList: childList,
+            checkbox: checkbox,
+            expander: expander,
+            el: el,
+            $el: $(el)
+        };
+    }
+
+    // Main tree node object ---------------------------------------------------
+
+    var TreeNode = {
+        create: function (attrs, parent, tree) {
+            var node;
+            function N() {}
+            N.prototype = TreeNode.prototype;
+            node = new N();
+
+            // Create a new node based on the given node data, filling in missing
+            // properties if possible, assingning the given parent to it, then
+            // recursively process each of its children, if any.
+
+            if (!attrs) {
+                throw 'Attempted to call prepareNode with no data';
+            }
+
+            // A node with no label or value property is invalid, unless it's
+            // the root node.
+            if (parent && !_(attrs).has('label') && !_(attrs).has('value')) {
+                throw 'Encountered tree node with no label or value';
+            }
+
+            if (_(attrs).has('value') && !_(attrs).has('label')) {
+                node.value = attrs.value;
+                node.label = attrs.value;
+            }
+
+            if (_(attrs).has('label') && !_(attrs).has('value')) {
+                node.label = attrs.label;
+                node.value = attrs.label;
+            }
+
+            if (_(attrs).has('label') && _(attrs).has('value')) {
+                node.label = attrs.label;
+                node.value = attrs.value;
+            }
+
+            node.tree = tree;
+            node.parent = parent;
+            node.state = UNSELECTED;
+            node.id = _.uniqueId('STV_');
+            node.elements = null;
+
+            if (_(attrs).has('children') && _(attrs.children).isArray() &&
+                attrs.children.length) {
+                node.children = _(attrs.children).map(function (child) {
+                    return TreeNode.create(child, node, tree);
+                }, node);
+            } else {
+                node.children = [];
+            }
+            if (tree.__nodeHash[node.id]) {
+                throw new TreeDataError('ID of ' + node.id + 'already exists');
+            }
+            node.tree.__nodeHash[node.id] = node;
+
+            return node;
+        }
+    };
+
+    TreeNode.prototype = {
         labelOrValueMatches: function (lowerCaseTerm) {
             var label = this.label.toLowerCase();
             var value;
@@ -150,88 +246,6 @@
             }
 
             return false;
-        },
-        __createElements: function (recurseDepth, appendToParentList) {
-            var el;
-            var label = D.createElement('label');
-            var checkbox = D.createElement('span');
-            var expander = D.createElement('span');
-            var childList;
-
-            if (this.parent) {
-                // Node is a child, so put its elements in an <li>
-                el = D.createElement('li');
-                el.className = 'stv-child-node';
-            } else {
-                // Node is the root, so add its elements to the tree's element
-                el = this.tree.__rootElement;
-                el.className = 'stv-root-node';
-            }
-            el.setAttribute('data-node-id', this.id);
-            el.setAttribute('data-value', this.value);
-            el.className += ' stv-node';
-
-            label.className = 'stv-label';
-            if (this.tree.__options.HTMLLabels) {
-                label.innerHTML = this.label;
-            } else {
-                label.appendChild(D.createTextNode(this.label));
-            }
-
-            checkbox.className = 'stv-checkbox';
-            if (this.state === UNSELECTED) {
-                el.className += ' stv-unselected';
-            } else if (this.state === PARTIAL) {
-                el.className += ' stv-partially-selected';
-            } else {
-                el.className += ' stv-selected';
-            }
-
-            expander.className = 'stv-expander';
-            if (recurseDepth === 0 && this.children.length > 0) {
-                el.className += ' stv-collapsed';
-            } else if (this.children.length > 0) {
-                el.className += ' stv-expanded';
-            }
-
-            el.appendChild(expander);
-            el.appendChild(checkbox);
-            el.appendChild(label);
-
-            if (this.children.length > 0) {
-                childList = D.createElement('ul');
-                childList.className = 'stv-child-list';
-                el.appendChild(childList);
-                el.className += ' stv-parent';
-            } else {
-                childList = null;
-                el.className += ' stv-leaf';
-            }
-
-            // Check recurseDepth against exactly 0 so that -1 can be passed to
-            // mean 'indefinite'.
-            if (this.children.length > 0 && recurseDepth !== 0) {
-                _(this.children).each(function (child) {
-                    child.__createElements((recurseDepth || 0) - 1);
-                    childList.appendChild(child.elements.el);
-                });
-            }
-
-            // This parameter is used when creating elements for a
-            // newly-expanded child list that was beyond the original recurse
-            // depth.
-            if (appendToParentList) {
-                this.parent.elements.childList.appendChild(el);
-            }
-
-            this.elements = {
-                label: label,
-                childList: childList,
-                checkbox: checkbox,
-                expander: expander,
-                el: el,
-                $el: $(el)
-            };
         },
         select: function () {
             this.state = SELECTED;
@@ -247,45 +261,8 @@
             setAnscestorState(this);
             return this;
         }
-    });
-
-    // #########  TREE  #########
-    var SimpleTreeView = function (opts) {
-        var o;
-
-        this.__root = {};
-        this.__options = {
-            HTMLLabels: false,
-            filter: true
-        };
-        this.__el = null;
-
-        // Every node in the tree has an entry in the hash, keyed by the node's
-        // unique id.
-        this.__nodeHash = {};
-
-        this.__rootElement = D.createElement('div');
-        this.__$rootElement = $(this.__rootElement);
-
-        _(this.__options).extend(opts);
-        o = this.__options;
-
-        if (o.data) {
-            this.setData(o.data);
-        }
-
-        if (o.filter) {
-            this.__createFilterElement();
-        }
-
-        if (o.element) {
-            this.setElement(o.element);
-        }
-        if (o.initialSelection) {
-            this.setSelection(o.initialSelection);
-        }
-
     };
+
 
     function copyNode(node) {
         return {
@@ -361,7 +338,7 @@
         if (node.elements.$el.hasClass('stv-expanded') && node.children.length > 0) {
             _(node.children).each(function (child) {
                 if (!child.elements) {
-                    child.__createElements(0, true);
+                    createElements.call(child, 0, true);
                 }
             });
         }
@@ -385,7 +362,58 @@
             el.nodeType === DOCUMENT_FRAGMENT_NODE);
     }
 
-    _(SimpleTreeView.prototype).extend({
+    // #########  TREE  #########
+    var SimpleTreeView = {
+        create: function (opts) {
+            var o;
+
+            var tree;
+            function T() {}
+            T.prototype = SimpleTreeView.prototype;
+            tree = new T();
+
+            tree.__root = {};
+            tree.__options = {
+                HTMLLabels: false,
+                filter: true
+            };
+            tree.__el = null;
+
+            // Every node in the tree has an entry in the hash, keyed by the node's
+            // unique id.
+            tree.__nodeHash = {};
+
+            tree.__rootElement = D.createElement('div');
+            tree.__$rootElement = $(tree.__rootElement);
+
+            _(tree.__options).extend(opts);
+            o = tree.__options;
+
+            if (o.data) {
+                tree.setData(o.data);
+            }
+
+            if (o.filter) {
+                tree.__createFilterElement();
+            }
+
+            if (o.element) {
+                tree.setElement(o.element);
+            }
+            if (o.initialSelection) {
+                tree.setSelection(o.initialSelection);
+            }
+
+            return tree;
+        },
+        NodeLocationError: NodeLocationError,
+        TreeDataError: TreeDataError,
+        UNSELECTED: UNSELECTED,
+        PARTIAL: PARTIAL,
+        SELECTED: SELECTED
+    };
+
+    SimpleTreeView.prototype = {
         getData: function () {
             return this.__root;
         },
@@ -393,7 +421,7 @@
             return copyNode(this.__root);
         },
         setData: function (data) {
-            this.__root = new TreeNode(data, null, this);
+            this.__root = TreeNode.create(data, null, this);
             return this;
         },
         nodeAt: function (loc) {
@@ -530,7 +558,7 @@
         __setEventHandlers: function () {
             var tree = this;
 
-            this.__$rootElement.on('click', '.stv-checkbox', function () {
+            this.__$rootElement.on('click', '.stv-checkbox, .stv-label', function () {
                 var nodeId = this.parentNode.getAttribute('data-node-id');
                 var node = tree.nodeWithId(nodeId);
                 if (!node) {
@@ -570,7 +598,7 @@
                 throw new TypeError('Unable to render tree with no valid element');
             }
             recurseDepth = _.isNumber(recurseDepth) ? recurseDepth : -1;
-            this.__root.__createElements(recurseDepth);
+            createElements.call(this.__root, recurseDepth);
 
             if (this.elFilter) {
                 this.__el.appendChild(this.elFilter);
@@ -578,13 +606,7 @@
 
             this.__el.appendChild(this.__rootElement);
         }
-    });
-
-    SimpleTreeView.NodeLocationError = NodeLocationError;
-    SimpleTreeView.TreeDataError = TreeDataError;
-    SimpleTreeView.UNSELECTED = UNSELECTED;
-    SimpleTreeView.PARTIAL = PARTIAL;
-    SimpleTreeView.SELECTED = SELECTED;
+    };
 
     global.SimpleTreeView = SimpleTreeView;
 

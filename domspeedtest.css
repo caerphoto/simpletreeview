@@ -33,12 +33,12 @@ a,
 }
 
 .stv-filtering .stv-node {
-    display: none;
+    opacity: 0.3;
 }
 
 .stv-filtering .stv-node.stv-filter-match,
 .stv-filtering .stv-node.stv-filter-descendant-match {
-    display: block;
+    opacity: 1;
 }
 
 .stv-filter-descendant-match > .stv-label {

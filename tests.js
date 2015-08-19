@@ -7,7 +7,7 @@ describe('Tree creation', function () {
     it('can be done without specifying parameters', function () {
         var tree;
         expect(function () {
-            tree = new SimpleTreeView();
+            tree = SimpleTreeView.create();
         }).not.toThrow();
     });
 
@@ -15,7 +15,7 @@ describe('Tree creation', function () {
         var testData = {
             value: 'root-node'
         };
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         expect(tree.getData().value).toEqual(testData.value);
     });
@@ -24,7 +24,7 @@ describe('Tree creation', function () {
         var testData = {
             label: 'Root Node'
         };
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         var node = tree.getData();
 
@@ -35,7 +35,7 @@ describe('Tree creation', function () {
         var testData = {
             value: 'root-node'
         };
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         var node = tree.getData();
 
@@ -51,7 +51,7 @@ describe('Tree creation', function () {
                 { label: 'Child 2', value: 'child2' }
             ]
         };
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         var data = tree.getData();
 
@@ -67,7 +67,7 @@ describe('Tree creation', function () {
                 { value: 'child1' }
             ]
         };
-        var tree = new SimpleTreeView({
+        var tree = SimpleTreeView.create({
             data: testData,
             initialSelection: [ 'child1' ]
         });
@@ -88,7 +88,7 @@ describe('An existing tree', function () {
     };
 
     it('can have new tree data assigned to it', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         testData.children.push({
             label: 'New Thing'
@@ -99,7 +99,7 @@ describe('An existing tree', function () {
     });
 
     it('can have its data modified', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         var data = tree.getData();
         data.label = 'CHANGED';
@@ -108,7 +108,7 @@ describe('An existing tree', function () {
     });
 
     it('can create a deep copy of its data', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
         var dataCopy1 = tree.copyData();
         var dataCopy2 = tree.copyData();
 
@@ -119,27 +119,27 @@ describe('An existing tree', function () {
     });
 
     it('can get a node by location', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
         var node = tree.nodeAt([ 0, 0 ]);
         expect(node.value).toEqual(testData.children[0].children[0].value);
     });
 
     it('throws a NodeLocationError when getting a node at an invalid location', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
         expect(function () {
             tree.nodeAt([ 1, 0 ]);
         }).toThrowError(SimpleTreeView.NodeLocationError);
     });
 
     it('throws a TreeDataError when locating nodes if it has no data', function () {
-        var tree = new SimpleTreeView();
+        var tree = SimpleTreeView.create();
         expect(function () {
             tree.nodeAt([ 0 ]);
         }).toThrowError(SimpleTreeView.TreeDataError);
     });
 
     it('can get a node by value', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
         var node = tree.nodeWithValue('child00');
 
         expect(node).toBeDefined();
@@ -147,7 +147,7 @@ describe('An existing tree', function () {
     });
 
     it('thows a TreeDataError when finding nodes if it has no data', function () {
-        var tree = new SimpleTreeView();
+        var tree = SimpleTreeView.create();
 
         expect(function () {
             tree.nodeWithValue('42');
@@ -155,7 +155,7 @@ describe('An existing tree', function () {
     });
 
     it('can provide a list of fully selected nodes', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
         var selection;
         tree.nodeWithValue('child00').select();
         tree.nodeWithValue('child01').select();
@@ -165,7 +165,7 @@ describe('An existing tree', function () {
     });
 
     it('can have a new selection applied, clearing the old one', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
         var selection = [ 'child0' ];
         tree.setSelection(selection);
         selection = [ 'child01', 'child1' ];
@@ -193,7 +193,7 @@ describe('A node', function () {
     });
 
     it('can be marked as selected', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
         var data = tree.getData();
 
         data.select();
@@ -201,7 +201,7 @@ describe('A node', function () {
     });
 
     it('selects all of its descendants when selected', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         var data = tree.getData();
         data.select();
@@ -211,7 +211,7 @@ describe('A node', function () {
     });
 
     it('deselects all of its descendants when deselected', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         var data = tree.getData();
         data.deselect();
@@ -221,7 +221,7 @@ describe('A node', function () {
     });
 
     it('marks its parent as partial when siblings are different', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         var data = tree.getData();
         data.children[1].select();
@@ -234,7 +234,7 @@ describe('A node', function () {
     });
 
     it('marks its parent as selected when siblings are selected', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         var data = tree.getData();
         data.children[0].select();
@@ -243,7 +243,7 @@ describe('A node', function () {
     });
 
     it('marks its parent as unselected when siblings are unselected', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
 
         var data = tree.getData();
         data.children[0].select();
@@ -256,13 +256,13 @@ describe('A node', function () {
     });
 
     it('knows about the tree it belongs to', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
         var node = tree.nodeAt([ 0 ]);
         expect(node.tree).toEqual(tree);
     });
 
     it('has a unique ID', function () {
-        var tree = new SimpleTreeView({ data: testData });
+        var tree = SimpleTreeView.create({ data: testData });
         var root = tree.getData();
         var node = tree.nodeAt([ 0 ]);
         expect(root.id).not.toEqual(node.id);
@@ -277,18 +277,18 @@ describe('DOM element', function () {
     });
 
     it('can be assigned when creating the tree', function () {
-        var tree = new SimpleTreeView({ element: el });
+        var tree = SimpleTreeView.create({ element: el });
         expect(tree.getElement()).toEqual(el);
     });
 
     it('can be assigned after tree creation', function () {
-        var tree = new SimpleTreeView();
+        var tree = SimpleTreeView.create();
         tree.setElement(el);
         expect(tree.getElement()).toEqual(el);
     });
 
     it('must be a valid HTML element or document fragment', function () {
-        var tree = new SimpleTreeView();
+        var tree = SimpleTreeView.create();
 
         expect(function () {
             tree.setElement();
@@ -327,14 +327,14 @@ describe('Tree rendering', function () {
 
     beforeEach(function () {
         el = document.createElement('div');
-        tree = new SimpleTreeView({
+        tree = SimpleTreeView.create({
             data: testData,
             element: el
         });
     });
 
     it('creates a root element', function () {
-        var tree = new SimpleTreeView({
+        var tree = SimpleTreeView.create({
             data: basicTestData,
             element: el
         });
@@ -346,7 +346,7 @@ describe('Tree rendering', function () {
     });
 
     it('creates child elements', function () {
-        var tree = new SimpleTreeView({
+        var tree = SimpleTreeView.create({
             data: basicTestData,
             element: el
         });
@@ -402,7 +402,7 @@ describe('Node checkbox event handling', function () {
 
     beforeEach(function () {
         el = document.createElement('div');
-        tree = new SimpleTreeView({
+        tree = SimpleTreeView.create({
             data: testData,
             element: el
         });
@@ -483,7 +483,7 @@ describe('Node expander event handling', function () {
 
     beforeEach(function () {
         el = document.createElement('div');
-        tree = new SimpleTreeView({
+        tree = SimpleTreeView.create({
             data: testData,
             element: el
         });
@@ -541,7 +541,7 @@ describe('Tree filtering', function () {
 
     beforeEach(function () {
         el = document.createElement('div');
-        tree = new SimpleTreeView({
+        tree = SimpleTreeView.create({
             data: testData,
             element: el
         });
@@ -556,7 +556,7 @@ describe('Tree filtering', function () {
     });
 
     it('does not create a filter input if the "filter" option is false', function () {
-        tree = new SimpleTreeView({
+        tree = SimpleTreeView.create({
             data: testData,
             element: el,
             filter: false
@@ -574,7 +574,7 @@ describe('Tree filtering', function () {
         $(tree.elFilter).trigger('keyup');
 
         // Class name is changed after a 500ms delay.
-        jasmine.clock().tick(501);
+        jasmine.clock().tick(600);
         expect(tree.getData().elements.el.className).toMatch(/stv-filtering/);
 
         jasmine.clock().uninstall();
