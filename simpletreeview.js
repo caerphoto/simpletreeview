@@ -1,7 +1,11 @@
-/*global define, _, $ */
-(function () {
-    var global = this;
-    var D = global.document;
+(function (root, factory) {
+     if (typeof define === 'function' && define.amd) {
+        define(['jquery', 'underscore'], factory);
+    } else {
+        root.SimpleTreeView = factory(root.jQuery, root._);
+    }
+}(this, function ($, _) {
+    var D = window.document;
 
     var UNSELECTED = 0;
     var PARTIAL = 1;
@@ -610,13 +614,5 @@
         }
     };
 
-    global.SimpleTreeView = SimpleTreeView;
-
-    // RequireJS/AMD compatibility.
-    if (typeof define === 'function' && define.amd) {
-        define(['underscore', 'jquery'], function() {
-            return SimpleTreeView;
-        });
-    }
-
-}).call(this);
+    return SimpleTreeView;
+}));
