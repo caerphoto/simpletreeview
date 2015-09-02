@@ -11,6 +11,12 @@
     var PARTIAL = 1;
     var SELECTED = 2;
 
+    var STRINGS = {
+        searchLabel: 'Search',
+        allMatch: '(no search term)',
+        someMatch: '# match'
+    };
+
     function NodeLocationError(loc) {
         this.loc = loc || [];
         this.name = 'NodeLocationError';
@@ -32,6 +38,11 @@
     }
     TreeDataError.prototype = new Error();
     TreeDataError.prototype.constructor = TreeDataError;
+
+    // Slightly more convenient and less verbose helper.
+    function appendText(node, text) {
+        return node.appendChild(document.createTextNode(text));
+    }
 
     // Node helper functions ---------------------------------------------------
 
@@ -116,7 +127,7 @@
         if (this.tree.__options.HTMLLabels) {
             label.innerHTML = this.label;
         } else {
-            label.appendChild(D.createTextNode(this.label));
+            appendText(label, this.label);
         }
 
         checkbox.className = 'stv-checkbox';
@@ -237,6 +248,13 @@
     };
 
     TreeNode.prototype = {
+        toString: function () {
+            return this.value;
+        },
+        valueOf: function () {
+            return this.value;
+        },
+
         labelOrValueMatches: function (lowerCaseTerm) {
             var label = this.label.toLowerCase();
             var value;
@@ -320,9 +338,6 @@
         }
 
         _.each(root.children, function (child) {
-            if (child.labelOrValueMatches(lowerCaseTerm)) {
-                nodes.push(child);
-            }
             nodes = nodes.concat(findNodes(child, lowerCaseTerm));
         });
         return nodes;
@@ -330,9 +345,6 @@
 
     function toggleNodeExpansion(node, expanded) {
         if (expanded) {
-            if (node.elements === null) {
-                console.log(node);
-            }
             node.elements.$el.removeClass('stv-collapsed');
             node.elements.$el.addClass('stv-expanded');
         } else {
@@ -381,7 +393,8 @@
             tree.__root = {};
             tree.__options = {
                 HTMLLabels: false,
-                filter: true
+                filter: true,
+                filterDelay: 500
             };
             tree.__el = null;
 
@@ -400,7 +413,7 @@
             }
 
             if (o.filter) {
-                tree.__createFilterElement();
+                tree.__createFilterElements();
             }
 
             if (o.element) {
@@ -409,6 +422,8 @@
             if (o.initialSelection) {
                 tree.setSelection(o.initialSelection);
             }
+
+            tree.matchingNodes = [];
 
             return tree;
         },
@@ -518,28 +533,50 @@
 
             throw new TypeError('Expected string or array when setting selection, but got ' + (typeof selection));
         },
+        getMatching: function () {
+            return this.matchingNodes;
+        },
 
-        __createFilterElement: function () {
-            // Set up the filter input box. Event handlers are set up separately
-            // in __setEventHandlers().
-            var elFilter = this.elFilter = document.createElement('div');
-            var input = document.createElement('input');
+        __createFilterElements: function () {
+            // Set up the filter input box and 'Select Matching' button. Event
+            // handlers are set up separately in __setEventHandlers().
+
+            var elFilterControls = this.elFilterControls = document.createElement('div');
+            var elMatchCount = this.elMatchCount = document.createElement('span');
+            var elFilter = this.elFilter = document.createElement('input');
             var label = document.createElement('label');
+            var elSelectMatching =
+                this.elSelectMatching =
+                document.createElement('button');
 
-            input.className = 'stv-filter-input';
-            input.type = 'text';
-            label.appendChild(document.createTextNode('Search'));
+            elFilterControls.className = 'stv-filter-controls';
+
+            elFilter.className = 'stv-filter-input';
+            elFilter.type = 'search';
+
+            appendText(label, STRINGS.searchLabel);
             label.className = 'stv-filter-label';
 
-            elFilter.appendChild(label);
-            elFilter.appendChild(input);
+            elMatchCount.className = 'stv-match-count';
+            appendText(elMatchCount, STRINGS.allMatch);
+
+            elSelectMatching.className = 'stv-select-matching';
+            appendText(elSelectMatching, 'Select');
+
+            elFilterControls.appendChild(label);
+            elFilterControls.appendChild(elFilter);
+            elFilterControls.appendChild(elMatchCount);
+            elFilterControls.appendChild(elSelectMatching);
 
             this.$elFilter = $(this.elFilter);
+            this.$elSelectMatching = $(this.elSelectMatching);
         },
 
         __applyFilter: function (term) {
-            var matchedNodes;
-            this.__$rootElement.toggleClass('stv-filtering', !!term);
+            var matchingNodes;
+            var matchText = STRINGS.allMatch;
+
+            this.__$el.toggleClass('stv-filtering', !!term);
 
             this.__$rootElement.
                 find('.stv-filter-match').
@@ -549,16 +586,30 @@
                 removeClass('stv-filter-descendant-match');
 
             if (!term) {
+                this.matchingNodes = [];
+                this.elMatchCount.innerHTML = matchText;
                 return;
             }
 
-            matchedNodes = findNodes(this.getData(), term.toLowerCase());
+            matchingNodes = findNodes(this.getData(), term.toLowerCase());
 
-            _(matchedNodes).each(function (node) {
+            _(matchingNodes).each(function (node) {
                 ensureElements(node);
                 node.elements.$el.addClass('stv-filter-match');
                 node.elements.$el.parentsUntil(this.__$el, '.stv-node').addClass('stv-filter-descendant-match');
             });
+
+            this.matchingNodes = matchingNodes;
+
+            matchText = STRINGS.someMatch +
+                (matchingNodes.length !== 1 ? 'es' : '');
+
+            this.elMatchCount.innerHTML =
+                matchText.replace('#', matchingNodes.length);
+        },
+
+        __selectMatching: function () {
+            _(this.matchingNodes).invoke('select');
         },
 
         __setEventHandlers: function () {
@@ -590,13 +641,22 @@
                 return;
             }
 
-            this.$elFilter.on('keyup', 'input', function () {
+            this.$elFilter.on('keyup input', function () {
                 var term = this.value;
+                var delay = tree.__options.filterDelay;
 
-                clearTimeout(tree.__filterTimeout);
-                tree.__filterTimeout = setTimeout(function () {
+                if (delay === false) {
                     tree.__applyFilter(term);
-                }, 500);
+                } else {
+                    clearTimeout(tree.__filterTimeout);
+                    tree.__filterTimeout = setTimeout(function () {
+                        tree.__applyFilter(term);
+                    }, 500);
+                }
+            });
+
+            this.$elSelectMatching.on('click', function () {
+                tree.__selectMatching();
             });
         },
         render: function (recurseDepth) {
@@ -606,8 +666,8 @@
             recurseDepth = _.isNumber(recurseDepth) ? recurseDepth : -1;
             createElements.call(this.__root, recurseDepth);
 
-            if (this.elFilter) {
-                this.__el.appendChild(this.elFilter);
+            if (this.elFilterControls) {
+                this.__el.appendChild(this.elFilterControls);
             }
 
             this.__el.appendChild(this.__rootElement);

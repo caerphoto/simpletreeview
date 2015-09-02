@@ -53,38 +53,9 @@
         return count;
     }
 
-    (function () {
-        var tree = SimpleTreeView.create({
-            data: {
-                label: '<div class="root">Root node</div>',
-                value: '*',
-                children: [
-                    {
-                        label: 'Child 0',
-                        value: 'c0',
-                        state: SimpleTreeView.SELECTED,
-                        children: [
-                            { label: 'HelloWorld' },
-                            { label: 'LoremIpsum' }
-                        ]
-                    },
-                    {
-                        label: '<a href="#">Child 1</a>',
-                        value: 'c1'
-                    }
-                ]
-            },
-            initialSelection: [ 'c0' ],
-            element: document.querySelector('#tree'),
-            HTMLLabels: true
-        });
-
-        tree.render();
-    }());
-
-    $(treeElement).on('click', '.stv-checkbox', function () {
+    $(treeElement).on('click', '.stv-checkbox, .stv-select-matching', function () {
         var sel = simpleTreeView.getSelectedNodes();
-        selection.innerHTML = _.pluck(sel, 'label').join(',');
+        selection.innerHTML = _.pluck(sel, 'label').join(', ');
     });
 
     btn.onclick = function () {
@@ -134,4 +105,10 @@
         timingTotal.innerHTML = totalTime + ' (<span class="ac">' + (creationTime + appendingTime) + '</span>)';
         nodeCount.innerHTML = count;
     };
+
+
+    btn.onclick();
+
+
+    $('.stv-filter-input').val('amet').trigger('keyup');
 }());

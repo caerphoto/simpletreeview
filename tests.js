@@ -543,7 +543,8 @@ describe('Tree filtering', function () {
         el = document.createElement('div');
         tree = SimpleTreeView.create({
             data: testData,
-            element: el
+            element: el,
+            filterDelay: 300
         });
     });
 
@@ -574,10 +575,11 @@ describe('Tree filtering', function () {
         $(tree.elFilter).trigger('keyup');
 
         // Class name is changed after a 500ms delay.
-        jasmine.clock().tick(600);
-        expect(tree.getData().elements.el.className).toMatch(/stv-filtering/);
-
+        jasmine.clock().tick(500);
         jasmine.clock().uninstall();
+
+        expect(tree.getElement().className).toMatch(/stv-filtering/);
+
     });
 
     it('marks filtered node elements with the correct class', function () {
@@ -586,11 +588,23 @@ describe('Tree filtering', function () {
         tree.render();
         tree.elFilter.value = 'child';
         $(tree.elFilter).trigger('keyup');
+        jasmine.clock().tick(500);
+        jasmine.clock().uninstall();
 
-        // Class name is changed after a 500ms delay.
-        jasmine.clock().tick(501);
         expect($(tree.getElement()).find('.stv-filter-match').length).toEqual(4);
 
+    });
+
+    it('selects matching nodes when Select button is clicked', function () {
+        jasmine.clock().install();
+
+        tree.render();
+        tree.elFilter.value = 'child0';
+        $(tree.elFilter).trigger('keyup');
+        jasmine.clock().tick(500);
+        $(tree.getElement()).find('.stv-select-matching').trigger('click');
         jasmine.clock().uninstall();
+
+        expect($(tree.getElement()).find('.stv-child-node.stv-selected').length).toEqual(3);
     });
 });
