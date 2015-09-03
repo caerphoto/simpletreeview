@@ -49,7 +49,7 @@
     function setChildrenState(node, state) {
         _(node.children).each(function (child) {
             child.state = state;
-            setNodeElementStateClass(child);
+            setNodeElementStates(child);
             setChildrenState(child, state);
         });
         return state;
@@ -80,33 +80,42 @@
             parent.state = PARTIAL;
         }
 
-        setNodeElementStateClass(parent);
+        setNodeElementStates(parent);
         setAnscestorState(parent);
     }
 
-    function setNodeElementStateClass(node) {
+    function setNodeElementStates(node) {
         var $el;
+        var checkbox;
+
         if (!node.elements) {
             // Node has not been rendered yet.
             return;
         }
         $el = node.elements.$el;
+        checkbox = node.elements.checkbox;
         if (node.state === SELECTED) {
             $el.removeClass('stv-unselected stv-partially-selected');
             $el.addClass('stv-selected');
+            checkbox.indeterminate = false;
+            checkbox.checked = true;
         } else if (node.state === PARTIAL) {
             $el.removeClass('stv-unselected stv-selected');
             $el.addClass('stv-partially-selected');
+            checkbox.indeterminate = true;
+            checkbox.checked = false;
         } else {
             $el.removeClass('stv-partially-selected stv-selected');
             $el.addClass('stv-unselected');
+            checkbox.indeterminate = false;
+            checkbox.checked = false;
         }
     }
 
     function createElements(recurseDepth, appendToParentList) {
         var el;
         var label = D.createElement('label');
-        var checkbox = D.createElement('span');
+        var checkbox = D.createElement('input');
         var expander = D.createElement('span');
         var childList;
 
@@ -130,13 +139,16 @@
             appendText(label, this.label);
         }
 
+        checkbox.type = 'checkbox';
         checkbox.className = 'stv-checkbox';
         if (this.state === UNSELECTED) {
             el.className += ' stv-unselected';
         } else if (this.state === PARTIAL) {
             el.className += ' stv-partially-selected';
+            checkbox.indeterminate = true;
         } else {
             el.className += ' stv-selected';
+            checkbox.checked = true;
         }
 
         expander.className = 'stv-expander';
@@ -271,14 +283,14 @@
         },
         select: function () {
             this.state = SELECTED;
-            setNodeElementStateClass(this);
+            setNodeElementStates(this);
             setChildrenState(this, this.state);
             setAnscestorState(this);
             return this;
         },
         deselect: function () {
             this.state = UNSELECTED;
-            setNodeElementStateClass(this);
+            setNodeElementStates(this);
             setChildrenState(this, this.state);
             setAnscestorState(this);
             return this;
