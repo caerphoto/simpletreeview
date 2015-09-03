@@ -552,7 +552,9 @@
             elFilterControls.className = 'stv-filter-controls';
 
             elFilter.className = 'stv-filter-input';
-            elFilter.type = 'search';
+
+            // Previously was 'search' but IE8 doesn't like it.
+            elFilter.type = 'text';
 
             appendText(label, STRINGS.searchLabel);
             label.className = 'stv-filter-label';
@@ -560,7 +562,8 @@
             elMatchCount.className = 'stv-match-count';
             appendText(elMatchCount, STRINGS.allMatch);
 
-            elSelectMatching.className = 'stv-select-matching';
+            // 'btn' class for compatibility with misc frameworks
+            elSelectMatching.className = 'btn stv-select-matching';
             appendText(elSelectMatching, 'Select');
 
             elFilterControls.appendChild(label);
