@@ -551,7 +551,7 @@
 
             elFilterControls.className = 'stv-filter-controls';
 
-            elFilter.className = 'stv-filter-input';
+            elFilter.className = 'stv-filter-input form-control';
 
             // Previously was 'search' but IE8 doesn't like it.
             elFilter.type = 'text';
